@@ -1,0 +1,233 @@
+# Edge Autopilot - On-Demand Task
+# Run a single task via workflow dispatch or API
+
+name: Autopilot Single Task
+
+on:
+  workflow_dispatch:
+    inputs:
+      task:
+        description: 'Task to execute (natural language)'
+        required: true
+        type: string
+      auto_commit:
+        description: 'Automatically commit changes'
+        required: false
+        default: true
+        type: boolean
+      create_pr:
+        description: 'Create PR instead of direct commit'
+        required: false
+        default: false
+        type: boolean
+      branch_name:
+        description: 'Branch name for PR (if create_pr is true)'
+        required: false
+        default: 'autopilot/task'
+        type: string
+      notify_slack:
+        description: 'Send Slack notification on completion'
+        required: false
+        default: true
+        type: boolean
+
+  # Allow triggering via repository dispatch (API)
+  repository_dispatch:
+    types: [autopilot-task]
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  run-task:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    
+    steps:
+      - name: Parse inputs
+        id: inputs
+        run: |
+          # Handle both workflow_dispatch and repository_dispatch
+          if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
+            echo "task=${{ github.event.client_payload.task }}" >> $GITHUB_OUTPUT
+            echo "auto_commit=${{ github.event.client_payload.auto_commit || 'true' }}" >> $GITHUB_OUTPUT
+            echo "create_pr=${{ github.event.client_payload.create_pr || 'false' }}" >> $GITHUB_OUTPUT
+            echo "branch_name=${{ github.event.client_payload.branch_name || 'autopilot/task' }}" >> $GITHUB_OUTPUT
+            echo "notify_slack=${{ github.event.client_payload.notify_slack || 'true' }}" >> $GITHUB_OUTPUT
+          else
+            echo "task=${{ github.event.inputs.task }}" >> $GITHUB_OUTPUT
+            echo "auto_commit=${{ github.event.inputs.auto_commit }}" >> $GITHUB_OUTPUT
+            echo "create_pr=${{ github.event.inputs.create_pr }}" >> $GITHUB_OUTPUT
+            echo "branch_name=${{ github.event.inputs.branch_name }}" >> $GITHUB_OUTPUT
+            echo "notify_slack=${{ github.event.inputs.notify_slack }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create branch for PR
+        if: steps.inputs.outputs.create_pr == 'true'
+        run: |
+          BRANCH="${{ steps.inputs.outputs.branch_name }}-${{ github.run_number }}"
+          git checkout -b "$BRANCH"
+          echo "BRANCH_NAME=$BRANCH" >> $GITHUB_ENV
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Configure Claude
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          mkdir -p ~/.config/claude
+          echo '{"api_key": "'$ANTHROPIC_API_KEY'"}' > ~/.config/claude/config.json
+
+      - name: Run task
+        id: task
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          TASK="${{ steps.inputs.outputs.task }}"
+          
+          echo "Executing task: $TASK"
+          
+          # Run the task
+          START_TIME=$(date +%s)
+          npm run autopilot -- run "$TASK" --auto 2>&1 | tee task.log
+          EXIT_CODE=${PIPESTATUS[0]}
+          END_TIME=$(date +%s)
+          
+          DURATION=$((END_TIME - START_TIME))
+          
+          echo "exit_code=$EXIT_CODE" >> $GITHUB_OUTPUT
+          echo "duration=$DURATION" >> $GITHUB_OUTPUT
+          
+          # Check for changes
+          CHANGED_FILES=$(git status --porcelain | wc -l)
+          echo "changed_files=$CHANGED_FILES" >> $GITHUB_OUTPUT
+
+      - name: Commit changes
+        if: steps.inputs.outputs.auto_commit == 'true' && steps.task.outputs.changed_files != '0'
+        run: |
+          git config --local user.email "autopilot@example.com"
+          git config --local user.name "Edge Autopilot"
+          
+          git add -A
+          git commit -m "feat: autopilot task execution
+
+          Task: ${{ steps.inputs.outputs.task }}
+          Duration: ${{ steps.task.outputs.duration }}s
+          Files changed: ${{ steps.task.outputs.changed_files }}
+          Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+      - name: Push changes
+        if: steps.inputs.outputs.auto_commit == 'true' && steps.task.outputs.changed_files != '0'
+        run: |
+          if [ "${{ steps.inputs.outputs.create_pr }}" = "true" ]; then
+            git push -u origin "$BRANCH_NAME"
+          else
+            git push
+          fi
+
+      - name: Create Pull Request
+        if: steps.inputs.outputs.create_pr == 'true' && steps.task.outputs.changed_files != '0'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: pr } = await github.rest.pulls.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🤖 Autopilot: ${{ steps.inputs.outputs.task }}`.slice(0, 100),
+              body: `## Autopilot Task Execution
+              
+              **Task:** ${{ steps.inputs.outputs.task }}
+              **Duration:** ${{ steps.task.outputs.duration }} seconds
+              **Files Changed:** ${{ steps.task.outputs.changed_files }}
+              
+              ### Task Output
+              \`\`\`
+              ${require('fs').readFileSync('task.log', 'utf8').slice(-2000)}
+              \`\`\`
+              
+              ---
+              *Created automatically by Edge Autopilot*
+              *Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}*`,
+              head: process.env.BRANCH_NAME,
+              base: 'main'
+            });
+            
+            console.log(`Created PR #${pr.number}`);
+            core.setOutput('pr_number', pr.number);
+            core.setOutput('pr_url', pr.html_url);
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: task-output-${{ github.run_number }}
+          path: |
+            task.log
+            logs/
+          retention-days: 14
+
+      - name: Create summary
+        if: always()
+        run: |
+          echo "## 🤖 Autopilot Task Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Task:** ${{ steps.inputs.outputs.task }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Status | ${{ steps.task.outputs.exit_code == '0' && '✅ Success' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Duration | ${{ steps.task.outputs.duration }}s |" >> $GITHUB_STEP_SUMMARY
+          echo "| Files Changed | ${{ steps.task.outputs.changed_files }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Output" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          tail -30 task.log >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+      - name: Notify Slack
+        if: always() && steps.inputs.outputs.notify_slack == 'true'
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          payload: |
+            {
+              "text": "${{ steps.task.outputs.exit_code == '0' && '✅' || '❌' }} Autopilot task completed",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "${{ steps.task.outputs.exit_code == '0' && '✅ Task Completed' || '❌ Task Failed' }}"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Task:* ${{ steps.inputs.outputs.task }}"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {"type": "mrkdwn", "text": "*Duration:*\n${{ steps.task.outputs.duration }}s"},
+                    {"type": "mrkdwn", "text": "*Files:*\n${{ steps.task.outputs.changed_files }}"},
+                    {"type": "mrkdwn", "text": "*Run:*\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View>"}
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK

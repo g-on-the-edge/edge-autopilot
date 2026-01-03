@@ -1,0 +1,258 @@
+# Edge Autopilot - PR Review
+# Automatically reviews and suggests fixes for PRs
+
+name: Autopilot PR Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  # Triggered by PR open/update
+  review-pr:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Get changed files
+        id: changed
+        run: |
+          # Get list of changed files
+          git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} > changed_files.txt
+          echo "Changed files:"
+          cat changed_files.txt
+          
+          # Count files
+          FILE_COUNT=$(wc -l < changed_files.txt)
+          echo "file_count=$FILE_COUNT" >> $GITHUB_OUTPUT
+
+      - name: Run Autopilot review
+        id: review
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Create a review task
+          cat > review-task.yaml << 'EOF'
+          tasks:
+            - id: pr-review
+              priority: high
+              description: Review PR changes
+              prompt: |
+                Review the following code changes in this pull request.
+                
+                PR Title: ${{ github.event.pull_request.title }}
+                PR Description: ${{ github.event.pull_request.body }}
+                
+                Changed files are listed in changed_files.txt.
+                
+                For each file:
+                1. Check for bugs or logic errors
+                2. Check for security issues
+                3. Suggest improvements
+                4. Check test coverage
+                
+                Output a structured review with:
+                - Summary of changes
+                - Issues found (critical, warning, suggestion)
+                - Suggested fixes
+              context: |
+                Focus on code quality and maintainability.
+                Be constructive in feedback.
+          EOF
+          
+          # Run autopilot in review mode
+          npm run autopilot -- run "$(cat review-task.yaml)" --auto 2>&1 | tee review.log || true
+          
+          # For now, output placeholder
+          echo "Review completed"
+
+      - name: Post review comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            
+            // Read review output
+            let reviewContent = 'Review in progress...';
+            try {
+              reviewContent = fs.readFileSync('review.log', 'utf8').slice(-2000);
+            } catch (e) {
+              console.log('No review log found');
+            }
+            
+            const body = `## 🤖 Autopilot Review
+            
+            **Files changed:** ${{ steps.changed.outputs.file_count }}
+            
+            ### Review Output
+            \`\`\`
+            ${reviewContent}
+            \`\`\`
+            
+            ---
+            *Automated review by Edge Autopilot. Reply with \`/autopilot fix\` to auto-fix suggestions.*`;
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: body
+            });
+
+  # Triggered by /autopilot commands in comments
+  handle-command:
+    if: github.event_name == 'issue_comment' && startsWith(github.event.comment.body, '/autopilot')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    steps:
+      - name: Parse command
+        id: parse
+        run: |
+          COMMENT="${{ github.event.comment.body }}"
+          COMMAND=$(echo "$COMMENT" | sed 's|/autopilot ||' | head -1)
+          echo "command=$COMMAND" >> $GITHUB_OUTPUT
+          echo "Parsed command: $COMMAND"
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Acknowledge command
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.reactions.createForIssueComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: context.payload.comment.id,
+              content: 'eyes'
+            });
+
+      - name: Execute command
+        id: execute
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          COMMAND="${{ steps.parse.outputs.command }}"
+          
+          case "$COMMAND" in
+            "fix")
+              echo "Running auto-fix..."
+              npm run autopilot -- run "Fix all issues mentioned in the PR review" --auto 2>&1 | tee command.log
+              ;;
+            "test")
+              echo "Running test generation..."
+              npm run autopilot -- run "Generate tests for changed files" --auto 2>&1 | tee command.log
+              ;;
+            "docs")
+              echo "Running documentation update..."
+              npm run autopilot -- run "Update documentation for changed files" --auto 2>&1 | tee command.log
+              ;;
+            "help")
+              echo "Available commands: fix, test, docs, help" > command.log
+              ;;
+            *)
+              echo "Custom task: $COMMAND"
+              npm run autopilot -- run "$COMMAND" --auto 2>&1 | tee command.log
+              ;;
+          esac
+          
+          EXIT_CODE=$?
+          echo "exit_code=$EXIT_CODE" >> $GITHUB_OUTPUT
+
+      - name: Commit changes
+        if: steps.execute.outputs.exit_code == '0'
+        run: |
+          git config --local user.email "autopilot@example.com"
+          git config --local user.name "Edge Autopilot"
+          
+          if [ -n "$(git status --porcelain)" ]; then
+            git add -A
+            git commit -m "chore: autopilot - ${{ steps.parse.outputs.command }}
+
+            Triggered by: @${{ github.event.comment.user.login }}
+            Command: /autopilot ${{ steps.parse.outputs.command }}"
+            
+            git push
+            echo "CHANGES_PUSHED=true" >> $GITHUB_ENV
+          else
+            echo "No changes to commit"
+            echo "CHANGES_PUSHED=false" >> $GITHUB_ENV
+          fi
+
+      - name: Post result comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            
+            let logContent = 'Command executed';
+            try {
+              logContent = fs.readFileSync('command.log', 'utf8').slice(-1500);
+            } catch (e) {}
+            
+            const changesPushed = process.env.CHANGES_PUSHED === 'true';
+            
+            const body = `## 🤖 Autopilot Command Result
+            
+            **Command:** \`/autopilot ${{ steps.parse.outputs.command }}\`
+            **Status:** ${{ steps.execute.outputs.exit_code == '0' && '✅ Success' || '❌ Failed' }}
+            ${changesPushed ? '**Changes pushed:** Yes' : ''}
+            
+            ### Output
+            \`\`\`
+            ${logContent}
+            \`\`\``;
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: body
+            });
+            
+            // Add success reaction
+            await github.rest.reactions.createForIssueComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: context.payload.comment.id,
+              content: '${{ steps.execute.outputs.exit_code }}' === '0' ? 'rocket' : 'confused'
+            });

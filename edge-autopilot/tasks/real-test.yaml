@@ -1,0 +1,15 @@
+tasks:
+  - id: count-files
+    status: complete
+    description: Count TypeScript files
+    prompt: |
+      Count how many .ts and .tsx files are in src/. Just report the number.
+      Do not ask questions - just do it.
+    completedAt: 2026-01-03T14:44:01.801Z
+  - id: list-services
+    status: complete
+    description: List service files
+    prompt: |
+      List all files in src/services/. Just the filenames.
+      Do not ask questions - just do it.
+    completedAt: 2026-01-03T14:44:13.782Z

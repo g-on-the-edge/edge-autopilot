@@ -1,0 +1,11 @@
+
+════════════════════════════════════════════════════════════
+  EDGE AUTOPILOT SESSION LOG
+  Started: 2026-01-02T19:37:37.383Z
+  Session: 2026-01-02T19-37-37-378Z
+════════════════════════════════════════════════════════════
+
+[2026-01-02T19:37:37.387Z] [INFO] Starting queue with 1 tasks
+[2026-01-02T19:37:37.396Z] [INFO] Running: Add JSDoc comments to all exported functions in src/hooks/useSupabase.ts
+Include @param, @returns, a...
+[2026-01-02T19:37:37.396Z] [ERROR] Task failed: add-jsdoc-hooks | {}

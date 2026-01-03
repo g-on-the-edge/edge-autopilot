@@ -1,0 +1,141 @@
+{
+  "name": "edge-autopilot-vscode",
+  "displayName": "Edge Autopilot",
+  "description": "AI Agent Supervisor - Orchestrate Claude Code sessions from VSCode",
+  "version": "1.0.0",
+  "publisher": "emplify-health",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": ["Other", "Machine Learning"],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./extension/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "edgeAutopilot.startCopilot",
+        "title": "Start Copilot Mode",
+        "category": "Edge Autopilot"
+      },
+      {
+        "command": "edgeAutopilot.startAutopilot",
+        "title": "Start Autopilot Mode",
+        "category": "Edge Autopilot"
+      },
+      {
+        "command": "edgeAutopilot.addTask",
+        "title": "Add Task to Queue",
+        "category": "Edge Autopilot"
+      },
+      {
+        "command": "edgeAutopilot.viewQueue",
+        "title": "View Task Queue",
+        "category": "Edge Autopilot"
+      },
+      {
+        "command": "edgeAutopilot.viewLogs",
+        "title": "View Session Logs",
+        "category": "Edge Autopilot"
+      },
+      {
+        "command": "edgeAutopilot.pause",
+        "title": "Pause Auto-Accept",
+        "category": "Edge Autopilot"
+      },
+      {
+        "command": "edgeAutopilot.resume",
+        "title": "Resume Auto-Accept",
+        "category": "Edge Autopilot"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "edge-autopilot",
+          "title": "Edge Autopilot",
+          "icon": "resources/autopilot.svg"
+        }
+      ]
+    },
+    "views": {
+      "edge-autopilot": [
+        {
+          "id": "autopilotStatus",
+          "name": "Status"
+        },
+        {
+          "id": "autopilotTasks",
+          "name": "Task Queue"
+        },
+        {
+          "id": "autopilotLogs",
+          "name": "Recent Actions"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Edge Autopilot",
+      "properties": {
+        "edgeAutopilot.mode": {
+          "type": "string",
+          "default": "copilot",
+          "enum": ["autopilot", "copilot"],
+          "description": "Default operating mode"
+        },
+        "edgeAutopilot.autoAccept": {
+          "type": "array",
+          "default": ["file_create", "file_edit", "terminal_command"],
+          "description": "Actions to auto-accept"
+        },
+        "edgeAutopilot.requireApproval": {
+          "type": "array",
+          "default": ["file_delete", "git_push", "database_migration"],
+          "description": "Actions that always require approval"
+        },
+        "edgeAutopilot.notifications": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show notifications for important actions"
+        },
+        "edgeAutopilot.quickConfirmTimeout": {
+          "type": "number",
+          "default": 2,
+          "description": "Seconds to show quick confirm before auto-accepting"
+        }
+      }
+    },
+    "keybindings": [
+      {
+        "command": "edgeAutopilot.addTask",
+        "key": "ctrl+shift+a",
+        "mac": "cmd+shift+a"
+      },
+      {
+        "command": "edgeAutopilot.pause",
+        "key": "ctrl+shift+p",
+        "mac": "cmd+shift+p",
+        "when": "edgeAutopilot.running"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "edgeAutopilot.addTask",
+          "group": "edgeAutopilot"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.0.0"
+  }
+}

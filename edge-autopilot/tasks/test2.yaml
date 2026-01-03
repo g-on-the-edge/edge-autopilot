@@ -1,0 +1,6 @@
+tasks:
+  - id: hello-test
+    description: Say hello
+    prompt: |
+      Just say "Hello from Edge Autopilot!" and nothing else.
+      Do not ask questions - just do it.

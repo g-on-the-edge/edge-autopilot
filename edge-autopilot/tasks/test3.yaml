@@ -1,0 +1,8 @@
+tasks:
+  - id: hello-test
+    status: complete
+    description: Say hello
+    prompt: |
+      Just say "Hello from Edge Autopilot!" and nothing else.
+      Do not ask questions - just do it.
+    completedAt: 2026-01-03T14:41:26.348Z

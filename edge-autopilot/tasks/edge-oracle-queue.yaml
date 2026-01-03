@@ -1,0 +1,22 @@
+# Edge Oracle - Task Queue
+tasks:
+  - id: simple-test
+    priority: high
+    description: Test task - list project structure
+    prompt: |
+      List the top-level folders in this project and count how many files are in the src directory.
+      Just give me a brief summary.
+
+  - id: find-todos
+    priority: normal
+    description: Find TODO comments
+    prompt: |
+      Search for TODO comments in the src/ folder.
+      List the top 10 most important ones with their file locations.
+
+  - id: check-typescript
+    priority: normal
+    description: Check for TypeScript issues
+    prompt: |
+      Run the TypeScript compiler in check mode and summarize any errors or warnings.
+      If there are no issues, just say "No TypeScript errors found".

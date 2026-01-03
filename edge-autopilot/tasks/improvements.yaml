@@ -1,0 +1,25 @@
+tasks:
+  - id: find-todos
+    status: complete
+    description: Find TODO comments
+    prompt: >
+      Find all TODO comments in src/services/. List the top 10 with file and
+      line.
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-03T14:46:13.928Z
+  - id: check-types
+    status: complete
+    description: Check TypeScript
+    prompt: |
+      Run npx tsc --noEmit and summarize any errors. If none, say "No errors".
+      Do not ask questions - just do it.
+    completedAt: 2026-01-03T14:46:40.652Z
+  - id: add-jsdoc-one-file
+    status: complete
+    description: Add JSDoc to one service
+    prompt: |
+      Add JSDoc comments to src/services/notificationService.ts.
+      Include @param and @returns for each function.
+      Do not ask questions - just do it.
+    completedAt: 2026-01-03T14:48:03.486Z

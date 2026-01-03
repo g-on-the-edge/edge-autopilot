@@ -1,0 +1,68 @@
+# Example Task Queue for Edge Oracle
+# Add your tasks here and run: npm run autopilot
+
+tasks:
+  # High priority - do these first
+  - id: buyer-helper-enhancement
+    priority: high
+    description: Enhance Buyer Helper PDF parsing
+    prompt: |
+      Look at the Buyer Helper app and improve the PDF parsing logic.
+      Specifically:
+      1. Handle multi-page PDFs better
+      2. Extract line items with quantities and prices
+      3. Add error handling for malformed PDFs
+    context: |
+      The Buyer Helper is located in the Edge Oracle project.
+      Use existing patterns from the codebase.
+      Write tests for the new functionality.
+
+  - id: dark-mode-fixes
+    priority: high
+    description: Fix dark mode color issues
+    prompt: |
+      Review all components for dark mode compatibility.
+      Fix any places where colors don't adapt properly.
+      Use the Edge Brand Colors defined in the design system.
+    context: |
+      Reference the brand guidelines for correct color usage.
+      Test both light and dark modes.
+
+  # Normal priority
+  - id: component-documentation
+    priority: normal
+    description: Add JSDoc comments to components
+    prompt: |
+      Add comprehensive JSDoc documentation to all React components
+      that are missing documentation. Include:
+      - Component description
+      - Props documentation with types
+      - Example usage
+    context: |
+      Focus on components in src/components/
+      Follow existing documentation patterns
+
+  - id: test-coverage
+    priority: normal
+    description: Improve test coverage
+    prompt: |
+      Review the current test coverage and add tests for:
+      1. Critical user flows
+      2. Edge cases in data processing
+      3. API error handling
+    context: |
+      Use Vitest for testing
+      Follow existing test patterns
+
+  # Low priority - nice to have
+  - id: performance-audit
+    priority: low
+    description: Performance optimization pass
+    prompt: |
+      Analyze the application for performance issues:
+      1. Look for unnecessary re-renders
+      2. Check bundle size and code splitting
+      3. Review database queries for efficiency
+    context: |
+      Document findings in PERFORMANCE.md
+      Implement quick wins, log others as issues

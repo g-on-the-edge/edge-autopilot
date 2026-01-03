@@ -1,0 +1,33 @@
+{
+  "name": "edge-autopilot",
+  "version": "1.0.0",
+  "description": "AI Agent Supervisor for Claude Code - runs as 'you' to orchestrate coding sessions",
+  "type": "module",
+  "main": "src/index.js",
+  "bin": {
+    "autopilot": "./src/cli.js"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "autopilot": "node src/cli.js autopilot",
+    "copilot": "node src/cli.js copilot",
+    "status": "node src/cli.js status",
+    "dev": "node --watch src/index.js"
+  },
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "commander": "^12.0.0",
+    "yaml": "^2.3.4",
+    "chokidar": "^3.5.3",
+    "inquirer": "^9.2.12",
+    "ora": "^8.0.1",
+    "boxen": "^7.1.1",
+    "node-notifier": "^10.0.1",
+    "ws": "^8.16.0",
+    "open": "^10.0.0",
+    "nodemailer": "^6.9.8"
+  },
+  "keywords": ["claude", "ai", "automation", "vscode"],
+  "author": "G @ Emplify Health",
+  "license": "MIT"
+}

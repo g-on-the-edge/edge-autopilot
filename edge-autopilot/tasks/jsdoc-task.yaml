@@ -1,0 +1,12 @@
+tasks:
+  - id: add-jsdoc-hooks
+    status: complete
+    description: Add JSDoc to Supabase hooks
+    prompt: |
+      Add JSDoc comments to ALL exported functions in these files:
+      - src/hooks/useKPIsSupabase.ts
+      - src/hooks/useSupabaseEquipment.ts
+      - src/hooks/useSupabaseStaff.ts
+      Include @param, @returns, and @example for each function.
+      Do not ask questions - just do it.
+    completedAt: 2026-01-02T20:16:01.196Z

@@ -1,0 +1,39 @@
+tasks:
+  - id: jsdoc-services
+    description: Add JSDoc to all services
+    prompt: |
+      Add comprehensive JSDoc comments to ALL exported functions in these files:
+      - src/services/simulatorService.ts
+      - src/services/ellevateIntegrationService.ts
+      - src/services/sopService.ts
+      Include @param, @returns, @throws, and @example tags.
+      Do not ask questions - just do it.
+
+  - id: error-handling-hooks
+    description: Add error handling to hooks
+    prompt: |
+      Review all files in src/hooks/ and add try-catch error handling
+      to any async functions that don't have it. Add console.error
+      logging with descriptive messages. Do not ask questions - just do it.
+
+  - id: remove-console-logs
+    description: Clean up debug console.logs
+    prompt: |
+      Find and remove all console.log statements in src/ that appear
+      to be debug statements (not error handling). Keep console.error
+      and console.warn. Do not ask questions - just do it.
+
+  - id: add-loading-states
+    description: Improve loading states in pages
+    prompt: |
+      Review src/pages/Dashboard.tsx and src/pages/HPOM/Analytics/ExecutiveSummary.jsx
+      Add proper loading skeleton states where data is being fetched.
+      Use existing Skeleton components if available, or create simple ones.
+      Do not ask questions - just do it.
+
+  - id: fix-accessibility
+    description: Add aria labels
+    prompt: |
+      Review src/components/ui/ and add missing aria-label attributes
+      to all interactive elements (buttons, inputs, links) that don't
+      have visible text labels. Do not ask questions - just do it.

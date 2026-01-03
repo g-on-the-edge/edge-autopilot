@@ -1,0 +1,8 @@
+tasks:
+  - id: quick-test
+    status: complete
+    description: Quick test
+    prompt: |
+      List the folders in src/. Just show folder names, nothing else.
+      Do not ask questions - just do it.
+    completedAt: 2026-01-03T14:28:31.116Z

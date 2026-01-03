@@ -1,0 +1,186 @@
+# Edge Autopilot - Scheduled Runs
+# Runs autopilot tasks on a schedule (overnight) or manually
+
+name: Autopilot Scheduled Run
+
+on:
+  # Run at 2 AM UTC every weekday
+  schedule:
+    - cron: '0 2 * * 1-5'
+  
+  # Manual trigger with inputs
+  workflow_dispatch:
+    inputs:
+      task_file:
+        description: 'Task queue file to run'
+        required: false
+        default: 'tasks/nightly-queue.yaml'
+      mode:
+        description: 'Run mode'
+        required: false
+        default: 'autopilot'
+        type: choice
+        options:
+          - autopilot
+          - copilot
+          - dry-run
+      max_tasks:
+        description: 'Maximum tasks to run'
+        required: false
+        default: '10'
+
+env:
+  NODE_VERSION: '20'
+  SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+  SMTP_HOST: ${{ secrets.SMTP_HOST }}
+  SMTP_USER: ${{ secrets.SMTP_USER }}
+  SMTP_PASS: ${{ secrets.SMTP_PASS }}
+  EMAIL_TO: ${{ secrets.EMAIL_TO }}
+
+jobs:
+  run-autopilot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120  # 2 hour max
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Claude CLI
+        run: |
+          # Install Claude CLI (adjust based on actual installation method)
+          npm install -g @anthropic-ai/claude-code || true
+          echo "Claude CLI installed"
+
+      - name: Configure Claude
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          # Configure Claude CLI authentication
+          mkdir -p ~/.config/claude
+          echo '{"api_key": "'$ANTHROPIC_API_KEY'"}' > ~/.config/claude/config.json
+
+      - name: Prepare task queue
+        run: |
+          TASK_FILE="${{ github.event.inputs.task_file || 'tasks/nightly-queue.yaml' }}"
+          echo "Using task file: $TASK_FILE"
+          if [ -f "$TASK_FILE" ]; then
+            echo "Task file found"
+            cat "$TASK_FILE"
+          else
+            echo "Task file not found, using default queue"
+          fi
+
+      - name: Run Autopilot
+        id: autopilot
+        run: |
+          MODE="${{ github.event.inputs.mode || 'autopilot' }}"
+          TASK_FILE="${{ github.event.inputs.task_file || 'tasks/nightly-queue.yaml' }}"
+          
+          if [ "$MODE" = "dry-run" ]; then
+            npm run autopilot -- --tasks "$TASK_FILE" --dry-run 2>&1 | tee autopilot.log
+          else
+            npm run autopilot -- --tasks "$TASK_FILE" 2>&1 | tee autopilot.log
+          fi
+          
+          # Capture exit code
+          EXIT_CODE=${PIPESTATUS[0]}
+          echo "exit_code=$EXIT_CODE" >> $GITHUB_OUTPUT
+          
+          # Extract stats from log
+          TASKS_COMPLETED=$(grep -oP 'Tasks completed: \K\d+' autopilot.log || echo "0")
+          echo "tasks_completed=$TASKS_COMPLETED" >> $GITHUB_OUTPUT
+
+      - name: Upload logs
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: autopilot-logs-${{ github.run_number }}
+          path: |
+            logs/
+            autopilot.log
+          retention-days: 30
+
+      - name: Upload any generated files
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: autopilot-output-${{ github.run_number }}
+          path: |
+            output/
+            dist/
+          retention-days: 7
+          if-no-files-found: ignore
+
+      - name: Create summary
+        if: always()
+        run: |
+          echo "## 🤖 Autopilot Run Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Mode | ${{ github.event.inputs.mode || 'autopilot' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Task File | ${{ github.event.inputs.task_file || 'tasks/nightly-queue.yaml' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Tasks Completed | ${{ steps.autopilot.outputs.tasks_completed || 'N/A' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Exit Code | ${{ steps.autopilot.outputs.exit_code || 'N/A' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Logs" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          tail -50 autopilot.log >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+      - name: Notify on failure
+        if: failure()
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          payload: |
+            {
+              "text": "❌ Autopilot run failed",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "❌ Autopilot Run Failed"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {"type": "mrkdwn", "text": "*Repository:*\n${{ github.repository }}"},
+                    {"type": "mrkdwn", "text": "*Run:*\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Logs>"}
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+
+      - name: Commit any changes
+        if: success() && github.event.inputs.mode != 'dry-run'
+        run: |
+          git config --local user.email "autopilot@example.com"
+          git config --local user.name "Edge Autopilot"
+          
+          # Check if there are changes to commit
+          if [ -n "$(git status --porcelain)" ]; then
+            git add -A
+            git commit -m "chore: autopilot automated changes [skip ci]
+
+            Run ID: ${{ github.run_id }}
+            Tasks: ${{ steps.autopilot.outputs.tasks_completed }}"
+            
+            git push
+          else
+            echo "No changes to commit"
+          fi

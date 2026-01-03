@@ -1,0 +1,23 @@
+tasks:
+  - id: add-error-handling
+    description: Add error handling to allocation service
+    prompt: |
+      Review src/services/allocationService.ts and add comprehensive 
+      try-catch error handling to all async functions.
+      Add proper error logging with console.error.
+      Do not ask questions - just do it.
+
+  - id: add-live-output-viewer
+    description: Add live output viewer to dashboard
+    prompt: |
+      Improve the Edge Autopilot dashboard at /Users/g/VScode-Programs/Projects/edge-autopilot/edge-autopilot/src/dashboard.js
+      
+      Add a Live Output panel that shows real-time Claude Code terminal output.
+      Add a new card to the dashboard HTML called Live Output.
+      Add a scrollable pre element to show streaming text.
+      Add a method addOutput(text) that broadcasts output to clients.
+      Style it with monospace font, dark background, green text like a terminal.
+      Auto-scroll to bottom as new output arrives.
+      Limit to last 200 lines for performance.
+      
+      Do not ask questions - just do it.

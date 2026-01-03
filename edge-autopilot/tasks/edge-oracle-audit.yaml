@@ -1,0 +1,163 @@
+tasks:
+  - id: inventory-routes
+    status: complete
+    description: Map all routes and pages
+    prompt: >
+      Analyze the Edge Oracle codebase at
+      /Users/g/VScode-Programs/Projects/edge-oracle
+
+
+      1. Find all routes in src/App.tsx or router config
+
+      2. List every page/route with its component file
+
+      3. Create a checklist at ./audit/pages-checklist.md with:
+         - Route path
+         - Component file
+         - Status: "Not tested"
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-03T22:03:22.513Z
+  - id: audit-dashboard
+    status: complete
+    description: Audit main Dashboard
+    prompt: |
+      Review src/pages/Dashboard.jsx in Edge Oracle:
+
+      1. Check all data fetching - is it connected to Supabase correctly?
+      2. Test that components render without errors
+      3. Look for console.log statements to remove
+      4. Check loading states and error handling
+      5. Review styling - does it have professional "wow factor"?
+      6. List any issues found in ./audit/dashboard-issues.md
+      7. Fix any quick wins (broken imports, missing error handling)
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-03T22:05:14.423Z
+  - id: audit-hpom-section
+    status: complete
+    description: Audit HPOM pages
+    prompt: |
+      Review all files in src/pages/HPOM/ in Edge Oracle:
+
+      1. Check each component for proper Supabase data fetching
+      2. Verify navigation between HPOM sub-pages works
+      3. Test that filters and controls function properly
+      4. Check for consistent styling with Edge Brand Colors
+      5. Look for dead code, unused imports, console.logs
+      6. Document issues in ./audit/hpom-issues.md
+      7. Fix obvious bugs and styling inconsistencies
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-03T22:08:37.505Z
+  - id: audit-facilities
+    status: complete
+    description: Audit Facilities section
+    prompt: |
+      Review src/pages/Facilities/ in Edge Oracle:
+
+      1. Check Facilities Browser loads data from Supabase
+      2. Verify map/HeatMap components work with geocoded data
+      3. Test search and filter functionality
+      4. Check facility detail views
+      5. Ensure consistent styling and professional appearance
+      6. Document issues in ./audit/facilities-issues.md
+      7. Fix any broken functionality
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-03T22:14:15.609Z
+  - id: audit-departments
+    status: complete
+    description: Audit Departments section
+    prompt: |
+      Review src/pages/Departments/ in Edge Oracle:
+
+      1. Check Department Browser loads hierarchy data
+      2. Verify department selection and navigation
+      3. Test KPI displays and metrics
+      4. Check Resource Model integration
+      5. Ensure professional styling throughout
+      6. Document issues in ./audit/departments-issues.md
+      7. Fix broken links and data connections
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-03T22:18:04.198Z
+  - id: audit-leadership-rounding
+    status: complete
+    description: Audit Leadership Rounding module
+    prompt: |
+      Review the Leadership Rounding feature in Edge Oracle:
+
+      1. Find all related files (search for "round", "executive")
+      2. Test the rounding workflow from start to finish
+      3. Check voice transcription integration
+      4. Verify action item extraction works
+      5. Test mobile responsiveness
+      6. Document issues in ./audit/rounding-issues.md
+      7. Fix any UX issues
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-03T22:22:14.615Z
+  - id: audit-navigation
+    status: complete
+    description: Audit navigation and routing
+    prompt: |
+      Review navigation in Edge Oracle:
+
+      1. Check sidebar navigation component
+      2. Verify all menu items link to correct routes
+      3. Test breadcrumbs if present
+      4. Check for broken links (404s)
+      5. Ensure active states show correctly
+      6. Test mobile navigation/hamburger menu
+      7. Document issues in ./audit/navigation-issues.md
+      8. Fix broken navigation items
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-03T22:26:54.161Z
+  - id: audit-auth
+    status: complete
+    description: Audit authentication flow
+    prompt: |
+      Review auth in Edge Oracle:
+
+      1. Check Login.jsx and auth components
+      2. Verify Supabase auth is configured
+      3. Test protected route handling
+      4. Check session persistence
+      5. Review logout functionality
+      6. Document issues in ./audit/auth-issues.md
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-03T22:28:56.217Z
+  - id: styling-polish
+    status: complete
+    description: Polish overall styling
+    prompt: |
+      Review and polish Edge Oracle styling:
+
+      1. Check src/index.css and global styles
+      2. Verify Edge Brand Colors are used consistently
+      3. Look for inconsistent spacing, fonts, colors
+      4. Check dark mode support if applicable
+      5. Ensure buttons, cards, tables have consistent styling
+      6. Add subtle animations/transitions for "wow factor"
+      7. Fix any styling inconsistencies found
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-03T22:33:12.188Z
+  - id: generate-report
+    status: complete
+    description: Generate final audit report
+    prompt: |
+      Create a final audit report for Edge Oracle:
+
+      1. Read all files in ./audit/ directory
+      2. Compile findings into ./audit/FINAL-REPORT.md
+      3. Categorize issues by severity (Critical, Major, Minor)
+      4. List what was fixed during this audit
+      5. Recommend next steps for remaining issues
+      6. Include summary stats (pages audited, issues found, issues fixed)
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-03T22:34:31.663Z

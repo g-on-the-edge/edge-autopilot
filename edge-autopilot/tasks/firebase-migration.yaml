@@ -1,0 +1,211 @@
+tasks:
+  - id: inventory-firebase
+    status: complete
+    description: Inventory all Firebase usage
+    prompt: >
+      In Edge Oracle at /Users/g/VScode-Programs/Projects/edge-oracle
+
+
+      1. Search for all files importing from 'firebase' or '@firebase'
+
+      2. List each file with the specific Firebase features used (Firestore,
+      Auth, Storage, etc.)
+
+      3. Create ./audit/firebase-inventory.md with:
+         - File path
+         - Firebase imports
+         - Collections/documents accessed
+         - Estimated migration complexity (Easy/Medium/Hard)
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-03T23:22:42.746Z
+  - id: migrate-hpom-analytics
+    status: complete
+    description: Migrate HPOMAnalytics to Supabase
+    prompt: >
+      Migrate src/pages/HPOM/Analytics/HPOMAnalytics.jsx from Firebase to
+      Supabase:
+
+
+      1. Replace Firebase imports with Supabase client
+
+      2. Convert Firestore queries to Supabase queries
+
+      3. Update any onSnapshot listeners to Supabase realtime subscriptions
+
+      4. Keep the same data structure and component behavior
+
+      5. Add error handling and loading states
+
+      6. Test that the component still renders
+
+
+      Reference existing Supabase patterns in src/hooks/useSupabase*.ts
+
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-03T23:25:50.340Z
+  - id: migrate-executive-summary
+    status: complete
+    description: Migrate ExecutiveSummary to Supabase
+    prompt: >
+      Migrate src/pages/HPOM/Analytics/ExecutiveSummary.jsx from Firebase to
+      Supabase:
+
+
+      1. Replace Firebase imports with Supabase client
+
+      2. Convert all Firestore queries to Supabase
+
+      3. Maintain existing UI and functionality
+
+      4. Add proper error handling
+
+
+      Reference existing Supabase patterns in the codebase.
+
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-03T23:28:19.446Z
+  - id: migrate-ellevate-portal
+    status: complete
+    description: Migrate EllevatePortal to Supabase
+    prompt: |
+      Migrate src/pages/HPOM/EllevatePortal.jsx from Firebase to Supabase:
+
+      1. Replace Firebase imports with Supabase client
+      2. Convert activity feed queries to Supabase
+      3. Update any realtime listeners
+      4. Ensure all CRUD operations use Supabase
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-03T23:29:59.412Z
+  - id: migrate-browse-ideas
+    status: complete
+    description: Migrate BrowseIdeas to Supabase
+    prompt: |
+      Migrate src/pages/HPOM/Ellevate/BrowseIdeas.jsx from Firebase to Supabase:
+
+      1. Replace Firebase Firestore with Supabase
+      2. Convert collection queries to Supabase table queries
+      3. Update filtering and sorting to use Supabase syntax
+      4. Maintain pagination if present
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-03T23:31:11.450Z
+  - id: migrate-pt-review-queue
+    status: complete
+    description: Migrate PTReviewQueue to Supabase
+    prompt: >
+      Migrate src/pages/HPOM/Ellevate/PTReviewQueue.jsx from Firebase to
+      Supabase:
+
+
+      1. Replace Firebase imports with Supabase
+
+      2. Convert all Firestore operations
+
+      3. Update any status update functions
+
+      4. Ensure approval/rejection workflows work
+
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-03T23:33:19.876Z
+  - id: migrate-remaining-ellevate
+    status: complete
+    description: Migrate remaining Ellevate files
+    prompt: |
+      Find and migrate any remaining Firebase files in src/pages/HPOM/Ellevate/:
+
+      1. Check IdeaDetail.jsx, MyIdeas.jsx, SubmitIdea.jsx
+      2. Replace Firebase with Supabase in each file
+      3. Ensure consistent patterns with already-migrated files
+      4. Update any shared services they use
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-03T23:35:36.014Z
+  - id: migrate-executive-rounds
+    status: complete
+    description: Migrate Executive Rounds service
+    prompt: |
+      Migrate src/services/executiveRoundsService.ts from Firebase to Supabase:
+
+      1. Replace Firebase Firestore imports with Supabase client
+      2. Convert all collection/document operations to Supabase tables
+      3. Update the executiveRoundsServiceSupabase.ts if it exists, or create it
+      4. Ensure all CRUD operations work
+      5. Update any components importing this service
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-03T23:42:27.399Z
+  - id: cleanup-firebase-config
+    status: complete
+    description: Remove Firebase config if unused
+    prompt: >
+      Check if Firebase is still needed in Edge Oracle:
+
+
+      1. Search for any remaining Firebase imports
+
+      2. If none remain, remove firebase config files
+
+      3. Remove firebase from package.json dependencies
+
+      4. Update any environment variables documentation
+
+      5. If Firebase is still used somewhere, document where in
+      ./audit/firebase-remaining.md
+
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-03T23:43:50.306Z
+  - id: fix-protected-route-duplicate
+    status: complete
+    description: Fix duplicate ProtectedRoute
+    prompt: |
+      Fix the duplicate ProtectedRoute components in Edge Oracle:
+
+      1. Find both ProtectedRoute.jsx and ProtectedRoute.tsx
+      2. Determine which one is more complete (likely .tsx)
+      3. Update all imports to use the chosen version
+      4. Delete the duplicate file
+      5. Verify the app still builds with: npm run build
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-03T23:44:53.115Z
+  - id: add-error-boundaries
+    status: complete
+    description: Add error boundaries for auth
+    prompt: |
+      Add error boundaries for auth failures in Edge Oracle:
+
+      1. Create src/components/ErrorBoundary.tsx if not exists
+      2. Wrap auth-sensitive routes with error boundary
+      3. Add user-friendly error messages for auth failures
+      4. Include retry/refresh options
+      5. Log errors appropriately
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-03T23:48:10.115Z
+  - id: migration-verification
+    status: complete
+    description: Verify migration complete
+    prompt: >
+      Verify the Firebase migration is complete:
+
+
+      1. Run: grep -r "firebase" src/ --include="*.js" --include="*.jsx"
+      --include="*.ts" --include="*.tsx"
+
+      2. Run: npm run build to check for errors
+
+      3. Update ./audit/FINAL-REPORT.md with migration status
+
+      4. List any remaining Firebase usage
+
+      5. Create ./audit/MIGRATION-COMPLETE.md with summary
+
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-03T23:49:53.064Z

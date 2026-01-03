@@ -1,0 +1,11 @@
+
+════════════════════════════════════════════════════════════
+  EDGE AUTOPILOT SESSION LOG
+  Started: 2026-01-02T15:08:58.609Z
+  Session: 2026-01-02T15-08-58-606Z
+════════════════════════════════════════════════════════════
+
+[2026-01-02T15:08:58.615Z] [INFO] Starting queue with 5 tasks
+[2026-01-02T15:08:58.625Z] [INFO] Running: Look at the Buyer Helper app and improve the PDF parsing logic.
+Specifically:
+1. Handle multi-page P...

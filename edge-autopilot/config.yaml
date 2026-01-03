@@ -1,0 +1,244 @@
+# Edge Autopilot Configuration v2
+# Enhanced with Slack, Smart Detection, and Dashboard
+
+# === MODES ===
+mode: copilot  # autopilot | copilot
+
+# === WORKING DIRECTORY ===
+# Set this to your project path (e.g., Edge Oracle)
+# Leave empty to use current directory
+workingDirectory: "/Users/g/VScode-Programs/Projects/edge-oracle"
+
+# === AUTOPILOT SETTINGS ===
+autopilot:
+  # Auto-accept these actions without asking
+  auto_accept:
+    - file_create
+    - file_edit
+    - terminal_command
+    - npm_install
+    - git_add
+    - git_commit
+  
+  # Always pause and wait for these
+  require_approval:
+    - file_delete
+    - git_push
+    - database_operation
+    - env_modification
+    - package_removal
+  
+  # Stop conditions
+  stop_on:
+    error_count: 3
+    unknown_action: false
+    max_risk_score: 0.8  # Stop if risk exceeds this
+
+# === COPILOT SETTINGS ===
+copilot:
+  auto_accept:
+    - file_create
+    - file_edit
+    - terminal_command
+  
+  # Show quick confirmation (auto-accept after timeout)
+  quick_confirm:
+    - npm_install
+    - git_commit
+  timeout_seconds: 2
+  
+  require_approval:
+    - file_delete
+    - git_push
+    - database_operation
+
+# === SMART DETECTION ===
+detection:
+  # Risk thresholds (actions above these levels trigger extra scrutiny)
+  risk_thresholds:
+    auto_deny: 0.9      # Automatically deny
+    require_approval: 0.7  # Must approve
+    warn: 0.5           # Log warning but allow
+  
+  # Learn from session history
+  enable_learning: true
+  
+  # Additional patterns to watch for
+  custom_dangerous_patterns:
+    - pattern: "DROP TABLE"
+      severity: critical
+      reason: "SQL DROP detected"
+
+# === NOTIFICATIONS ===
+notifications:
+  # System notifications (desktop)
+  system:
+    enabled: true
+    on_complete: true
+    on_error: true
+    on_approval_needed: true
+  
+  # Slack integration
+  slack:
+    enabled: false
+    webhook_url: ""  # Set via environment variable
+    channel: "#autopilot"
+    bot_name: "Edge Autopilot"
+    bot_emoji: ":robot_face:"
+    
+    # What to notify about
+    notify_on:
+      - session_start
+      - session_complete
+      - task_start
+      - task_complete
+      - task_failed
+      - approval_needed
+      - critical_action
+    
+    # Mention users for critical alerts
+    mention_on_critical: "@channel"
+
+  # Email notifications
+  email:
+    enabled: false
+    smtp:
+      host: ${SMTP_HOST}
+      port: 587
+      secure: false
+      user: ${SMTP_USER}
+      pass: ${SMTP_PASS}
+    from: "Edge Autopilot <autopilot@example.com>"
+    to: ${EMAIL_TO}
+    
+    # What to email about
+    send_on:
+      - session_complete
+      - task_failed
+      - critical_action
+      - daily_digest
+    
+    # Daily digest time (24h format, UTC)
+    daily_digest_time: "08:00"
+
+# === INTEGRATIONS ===
+integrations:
+  # GitHub Actions integration
+  github:
+    enabled: true
+    token: ${GITHUB_TOKEN}
+    owner: ${GITHUB_OWNER}
+    repo: ${GITHUB_REPO}
+    
+    # Webhook settings (for receiving CI events)
+    webhook_secret: ${GITHUB_WEBHOOK_SECRET}
+    
+    # Auto-create issues for failures
+    create_issues_on_failure: true
+    issue_labels:
+      - autopilot
+      - automated
+      - bug
+    
+    # PR integration
+    comment_on_prs: true
+    
+    # Trigger workflows
+    workflows:
+      on_session_complete: null  # workflow filename or null
+      on_task_failed: null
+      on_critical_action: null
+
+# === DASHBOARD ===
+dashboard:
+  enabled: true
+  port: 3847
+  host: "0.0.0.0"  # Use localhost for local only
+  
+  # Auto-open in browser on start
+  auto_open: false
+  
+  # Authentication (optional)
+  auth:
+    enabled: false
+    # password: "your-password"
+
+# === TASK QUEUE ===
+tasks:
+  source: ./tasks/
+  on_complete: next  # next | pause | notify
+  timeout: 30        # Max minutes per task
+  
+  # Retry failed tasks
+  retry:
+    enabled: true
+    max_attempts: 2
+    delay_seconds: 5
+
+# === CONTEXT INJECTION ===
+context:
+  project_standards: |
+    - Use TypeScript for all new files
+    - Follow existing patterns in the codebase
+    - Add JSDoc comments for public functions
+    - Create tests for new functionality
+    - Use Edge Brand Colors for any UI work
+  
+  current_focus: |
+    Working on Edge Oracle platform for Emplify Health.
+    Priority: Maintain consistency with existing design system.
+    Database: Supabase (migrated from Firebase)
+    
+  error_handling: |
+    If you encounter an error:
+    1. Try to fix it yourself first
+    2. If stuck after 2 attempts, log the issue and move on
+    3. Document blockers in ./logs/blockers.md
+    4. Don't modify .env files without explicit approval
+
+# === LOGGING ===
+logging:
+  directory: ./logs/
+  level: info  # debug | info | warn | error
+  
+  # What to include in logs
+  include_prompts: true
+  include_responses: true
+  include_actions: true
+  
+  # Generate daily summary
+  daily_summary: true
+  
+  # Rotate logs
+  rotation:
+    max_files: 30
+    max_size_mb: 100
+
+# === SAFETY ===
+safety:
+  # Directories that are off-limits
+  protected_paths:
+    - .env
+    - .env.*
+    - secrets/
+    - credentials/
+    - "*.pem"
+    - "*.key"
+  
+  # Require confirmation for paths matching these patterns
+  sensitive_paths:
+    - package.json
+    - tsconfig.json
+    - "*.config.js"
+    - supabase/
+  
+  # Maximum limits per session
+  max_changes_per_session: 100
+  max_deletes_per_session: 10
+  max_autonomous_hours: 8
+  
+  # Dry run mode
+  dry_run: false
+  
+  # Sandbox mode (run in isolated environment)
+  sandbox: false
