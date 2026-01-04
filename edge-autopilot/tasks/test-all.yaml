@@ -1,0 +1,15 @@
+tasks:
+  - id: test1
+    status: complete
+    description: First test task
+    prompt: |
+      Say "Hello from task 1!" and count to 5.
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T02:30:04.101Z
+  - id: test2
+    status: complete
+    description: Second test task
+    prompt: |
+      Say "Hello from task 2!" and list 3 fruits.
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T02:30:08.102Z

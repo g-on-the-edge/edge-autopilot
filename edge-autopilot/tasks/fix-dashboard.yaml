@@ -1,0 +1,88 @@
+tasks:
+  - id: fix-live-output
+    status: complete
+    description: Fix live output streaming
+    prompt: >
+      Fix Edge Autopilot dashboard live output at
+      /Users/g/VScode-Programs/Projects/edge-autopilot/edge-autopilot
+
+
+      Problem: Live Output panel shows "0 lines" - Claude Code output isn't
+      streaming to dashboard.
+
+
+      Current state: stdio is set to 'inherit' which sends output to terminal
+      but not dashboard.
+
+
+      Fix src/supervisor-v2.js runSingle() method:
+
+      1. Change stdio to ['pipe', 'pipe', 'pipe'] 
+
+      2. Add stdout/stderr handlers that:
+         - Write to process.stdout/stderr (so terminal still shows output)
+         - Call this.dashboard.addOutput(text) to broadcast via WebSocket
+      3. Make sure to handle the data events properly to avoid hanging
+
+      4. Use setEncoding('utf8') on the streams
+
+
+      Also check src/dashboard.js:
+
+      1. Verify addOutput() method exists and broadcasts to WebSocket clients
+
+      2. Verify the client HTML receives and displays the output
+
+
+      Test by running: node src/cli.js run "echo hello"
+
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T01:26:08.390Z
+  - id: fix-stats-update
+    status: complete
+    description: Fix dashboard stats not updating
+    prompt: >
+      Fix Edge Autopilot dashboard stats not updating at
+      /Users/g/VScode-Programs/Projects/edge-autopilot/edge-autopilot
+
+
+      Problem: Dashboard shows 0 for completed/failed/files even after tasks
+      finish.
+
+
+      Debug and fix:
+
+      1. In supervisor-v2.js - verify sessionStats is being updated
+
+      2. In supervisor-v2.js - verify this.dashboard.updateStats() is called
+      after task completion
+
+      3. In dashboard.js - verify updateStats() broadcasts via WebSocket
+
+      4. In dashboard.js - verify the HTML client receives stats updates
+
+      5. Add console.log statements to trace the flow if needed
+
+      6. Fix whatever is broken
+
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T01:27:53.427Z
+  - id: test-dashboard
+    status: complete
+    description: Test dashboard fixes
+    prompt: |
+      Test the Edge Autopilot dashboard fixes:
+
+      1. Create a simple test task file:
+         tasks/dashboard-test.yaml with 2 quick tasks
+      2. Run: node src/cli.js autopilot -t ./tasks/dashboard-test.yaml
+      3. Open http://localhost:3847 and verify:
+         - Live Output shows Claude's responses
+         - Stats update as tasks complete
+         - Current Task shows correct task
+      4. Report what works and what doesn't
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T01:28:52.097Z

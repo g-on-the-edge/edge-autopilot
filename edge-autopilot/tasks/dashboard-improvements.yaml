@@ -1,0 +1,46 @@
+tasks:
+  - id: live-output-streaming
+    description: Add live Claude output to dashboard
+    prompt: |
+      Improve Edge Autopilot at /Users/g/VScode-Programs/Projects/edge-autopilot/edge-autopilot
+      
+      Fix src/supervisor-v2.js to stream Claude Code output to the dashboard:
+      
+      1. Change stdio back to ['pipe', 'pipe', 'pipe']
+      2. Properly handle stdout/stderr streams WITHOUT causing hangs:
+         - Use proc.stdout.on('data') to capture output
+         - Write to process.stdout for terminal display
+         - Call this.dashboard.addOutput(text) for WebSocket broadcast
+         - Handle backpressure properly
+      3. Make sure the process completes normally (don't hang)
+      4. Test that output appears in dashboard Live Output panel
+      
+      The previous pipe implementation hung - fix that issue.
+      
+      Do not ask questions - just do it.
+
+  - id: dashboard-stats-fix
+    description: Fix dashboard stats not updating
+    prompt: |
+      Fix Edge Autopilot dashboard stats at /Users/g/VScode-Programs/Projects/edge-autopilot/edge-autopilot
+      
+      The dashboard shows 0 for all stats even when tasks complete.
+      
+      1. Check src/supervisor-v2.js - verify updateStats() is called
+      2. Check src/dashboard.js - verify WebSocket broadcasts stats
+      3. Check the HTML client - verify it receives and displays stats
+      4. Add console logging to trace the issue
+      5. Fix whatever is broken
+      
+      Do not ask questions - just do it.
+
+  - id: session-complete-fix
+    description: Fix premature session complete message
+    prompt: |
+      Fix Edge Autopilot dashboard showing "Session Complete" too early:
+      
+      1. Check when sessionComplete() is called in supervisor-v2.js
+      2. It should only show after ALL tasks finish, not after first task
+      3. Fix the logic so it waits for entire queue to complete
+      
+      Do not ask questions - just do it.

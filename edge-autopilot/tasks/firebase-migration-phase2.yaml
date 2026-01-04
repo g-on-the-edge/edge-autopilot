@@ -1,0 +1,196 @@
+tasks:
+  - id: migrate-pt-decision
+    status: complete
+    description: Migrate PTDecision to Supabase
+    prompt: |
+      Migrate src/pages/HPOM/Ellevate/PTDecision.jsx from Firebase to Supabase:
+
+      1. Replace Firebase imports with Supabase client
+      2. Convert all Firestore queries to Supabase
+      3. Update field names from camelCase to snake_case
+      4. Update any realtime listeners to Supabase subscriptions
+      5. Keep same UI and functionality
+
+      Reference the already-migrated files like BrowseIdeas.jsx for patterns.
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T00:09:06.108Z
+  - id: migrate-intake-review
+    status: complete
+    description: Migrate IntakeReview to Supabase
+    prompt: >
+      Migrate src/pages/HPOM/Ellevate/IntakeReview.jsx from Firebase to
+      Supabase:
+
+
+      1. Replace Firebase imports with Supabase client
+
+      2. Convert all Firestore queries to Supabase
+
+      3. Update field names to snake_case
+
+      4. Ensure approval/rejection workflows work
+
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T00:12:45.689Z
+  - id: migrate-pt-compare-ideas
+    status: complete
+    description: Migrate PTCompareIdeas to Supabase
+    prompt: >
+      Migrate src/pages/HPOM/Ellevate/PTCompareIdeas.jsx from Firebase to
+      Supabase:
+
+
+      1. Replace Firebase imports with Supabase client
+
+      2. Convert all Firestore queries to Supabase
+
+      3. Update field names to snake_case
+
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T00:14:07.226Z
+  - id: migrate-pt-evaluation
+    status: complete
+    description: Migrate PTEvaluation to Supabase
+    prompt: >
+      Migrate src/pages/HPOM/Ellevate/PTEvaluation.jsx from Firebase to
+      Supabase:
+
+
+      1. Replace Firebase imports with Supabase client
+
+      2. Convert all Firestore queries to Supabase
+
+      3. Update field names to snake_case
+
+      4. Ensure scoring and evaluation submission works
+
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T00:16:12.747Z
+  - id: migrate-convert-to-project
+    status: complete
+    description: Migrate ConvertToProject to Supabase
+    prompt: >
+      Migrate src/pages/HPOM/Ellevate/ConvertToProject.jsx from Firebase to
+      Supabase:
+
+
+      1. Replace Firebase imports with Supabase client
+
+      2. Convert all Firestore queries to Supabase
+
+      3. Update field names to snake_case
+
+      4. Ensure project creation workflow works
+
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T00:18:35.136Z
+  - id: migrate-project-management
+    status: complete
+    description: Migrate Project Management files
+    prompt: |
+      Find and migrate all Firebase usage in src/pages/ProjectManagement/:
+
+      1. List all files with Firebase imports
+      2. Migrate each file to Supabase
+      3. Convert queries and field names
+      4. Ensure all CRUD operations work
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T00:21:08.966Z
+  - id: migrate-scribe-service
+    status: complete
+    description: Migrate Scribe/Documentation service
+    prompt: |
+      Find and migrate Firebase usage in Scribe/Documentation:
+
+      1. Search for files in src/ related to scribe, documentation
+      2. Replace Firebase with Supabase
+      3. Update any storage references to Supabase Storage
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T00:32:40.200Z
+  - id: migrate-aor-builder
+    status: complete
+    description: Migrate AOR Builder files
+    prompt: |
+      Find and migrate all Firebase usage in AOR Builder:
+
+      1. Search for AOR-related files in src/pages/ and src/services/
+      2. Replace Firebase with Supabase
+      3. Convert queries and field names
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T00:35:01.706Z
+  - id: migrate-storage-files
+    status: complete
+    description: Migrate Firebase Storage to Supabase Storage
+    prompt: |
+      Find and migrate all Firebase Storage usage:
+
+      1. Search for 'firebase/storage' imports
+      2. Replace with Supabase Storage client
+      3. Update upload/download functions
+      4. Update any URL references
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T00:37:40.036Z
+  - id: migrate-remaining-services
+    status: complete
+    description: Migrate remaining service files
+    prompt: |
+      Find and migrate any remaining Firebase services:
+
+      1. Search src/services/ for Firebase imports
+      2. Migrate each service to Supabase
+      3. Update any components that import these services
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T00:46:28.049Z
+  - id: migrate-contexts
+    status: complete
+    description: Migrate context providers
+    prompt: |
+      Find and migrate any Firebase usage in context providers:
+
+      1. Search src/contexts/ for Firebase imports
+      2. Replace with Supabase
+      3. Update realtime subscriptions
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T00:56:29.583Z
+  - id: migrate-hooks
+    status: complete
+    description: Migrate remaining hooks
+    prompt: |
+      Find and migrate any Firebase usage in hooks:
+
+      1. Search src/hooks/ for Firebase imports
+      2. Replace with Supabase
+      3. Ensure hook functionality is preserved
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T01:00:06.166Z
+  - id: verify-phase2
+    status: complete
+    description: Verify phase 2 migration
+    prompt: >
+      Verify phase 2 Firebase migration:
+
+
+      1. Run: grep -r "firebase" src/ --include="*.js" --include="*.jsx"
+      --include="*.ts" --include="*.tsx" | wc -l
+
+      2. Run: npm run build
+
+      3. List remaining Firebase files
+
+      4. Update ./audit/MIGRATION-COMPLETE.md
+
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T01:01:21.108Z
