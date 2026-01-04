@@ -1,0 +1,58 @@
+@import "tailwindcss";
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgb(30 41 59); /* slate-800 */
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgb(71 85 105); /* slate-600 */
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(100 116 139); /* slate-500 */
+}
+
+/* Selection */
+::selection {
+  background-color: rgb(20 184 166 / 0.3); /* teal-500 */
+}
+
+/* Focus ring */
+*:focus-visible {
+  outline: 2px solid rgb(20 184 166); /* teal-500 */
+  outline-offset: 2px;
+}
+
+/* Custom utilities */
+@utility bg-slate-750 {
+  background-color: rgb(41 52 71);
+}
+
+/* Animations */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out;
+}
+
+/* Log panel monospace styling */
+.font-mono {
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+}

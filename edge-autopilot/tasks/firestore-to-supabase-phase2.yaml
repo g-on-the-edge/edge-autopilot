@@ -1,0 +1,107 @@
+tasks:
+  - id: remove-timestamp-imports
+    status: complete
+    description: Remove Firebase Timestamp-only imports
+    prompt: >
+      In Edge Oracle, remove Firebase Timestamp imports from files that only use
+      it for typing:
+
+
+      1. For each of these files, replace Firebase Timestamp with a local type:
+         - src/features/hpom/aor-builder/approval/AorSubmissionStatus.tsx
+         - src/features/hpom/aor-builder/approval/AorApprovalDetail.tsx
+         - src/features/hpom/aor-builder/department-integration/DepartmentAorSection.tsx
+         - src/features/hpom/aor-builder/department-integration/SharedAccountabilityQuickView.tsx
+         - src/features/hpom/aor-builder/department-integration/useAorForDepartment.ts
+         - src/features/hpom/aor-builder/department-integration/DepartmentAorPreviewModal.tsx
+         - src/features/hpom/aor-builder/version-history/AorVersionHistory.tsx
+      2. Use src/types/common.ts Timestamp type or create: type Timestamp = {
+      toDate: () => Date }
+
+      3. Remove "import { Timestamp } from 'firebase/firestore'"
+
+      4. Run npm run build to verify
+
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T18:14:32.117Z
+  - id: migrate-aor-context
+    status: complete
+    description: Migrate AorContext to use Supabase services only
+    prompt: >
+      In Edge Oracle, migrate src/context/AorContext.tsx:
+
+
+      1. Review current AorContext.tsx
+
+      2. Replace imports from src/services/aorService.ts with
+      src/services/unifiedAorService.ts
+
+      3. Remove any direct Firebase/Firestore imports
+
+      4. Use the Supabase-based unified AOR service for all operations
+
+      5. Update any onSnapshot listeners to Supabase realtime
+
+      6. Run npm run build to verify
+
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T18:17:20.617Z
+  - id: migrate-notification-service
+    status: complete
+    description: Migrate notificationService to Supabase
+    prompt: >
+      In Edge Oracle, migrate src/services/notificationService.ts:
+
+
+      1. Check if src/services/notificationServiceSupabase.ts exists
+
+      2. If yes, update notificationService.ts to re-export from Supabase
+      version
+
+      3. If no, create Supabase implementation with:
+         - createNotification(notification)
+         - getNotifications(userId)
+         - markAsRead(notificationId)
+         - deleteNotification(notificationId)
+      4. Remove Firebase imports
+
+      5. Run npm run build to verify
+
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T18:19:22.151Z
+  - id: delete-legacy-aor-service
+    status: complete
+    description: Clean up legacy aorService.ts
+    prompt: |
+      In Edge Oracle, clean up the legacy aorService.ts:
+
+      1. Check src/services/aorService.ts
+      2. Find all files importing from it:
+         grep -rn "from.*aorService" src/
+      3. Update imports to use unifiedAorService.ts or the Supabase equivalent
+      4. Once no files import from aorService.ts, delete it
+      5. Run npm run build to verify
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T18:25:01.003Z
+  - id: verify-phase2
+    status: complete
+    description: Verify Phase 2 migrations
+    prompt: >
+      In Edge Oracle, verify Phase 2 migrations:
+
+
+      1. Run: npm run build - fix any errors
+
+      2. Count remaining Firebase imports:
+         grep -rn "from.*firebase" src/ --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" | wc -l
+      3. List files still using Firebase
+
+      4. Update ./audit/firestore-migration-plan.md with Phase 2 status
+
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T18:26:13.549Z

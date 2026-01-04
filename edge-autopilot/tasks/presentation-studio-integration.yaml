@@ -1,0 +1,165 @@
+tasks:
+  - id: verify-module-files
+    status: complete
+    description: Verify all module files are present
+    prompt: |
+      In Edge Oracle, verify the Presentation Studio module files are present:
+
+      1. Check src/modules/presentation-studio/ exists
+      2. Verify these files are present:
+         - pages/PresentationStudio.tsx
+         - components/ExportModal.tsx
+         - components/SceneDataEditor.tsx
+         - components/index.ts
+         - hooks/index.ts
+         - services/ttsService.ts
+         - services/videoRenderService.ts
+         - api/routes.ts
+         - remotion/Composition.tsx
+         - remotion/index.ts
+         - database/schema.sql
+         - types/index.ts
+         - index.ts
+         - README.md
+         - package.json
+      3. List any missing files
+      4. Create ./audit/presentation-studio-integration.md with status
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T19:54:48.896Z
+  - id: install-dependencies
+    status: complete
+    description: Install Remotion dependencies
+    prompt: |
+      In Edge Oracle, install the required Remotion packages:
+
+      1. Run: npm install @remotion/bundler @remotion/renderer remotion --save
+      2. Verify packages were added to package.json
+      3. Run npm run build to check for any immediate issues
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T19:55:32.404Z
+  - id: fix-import-paths
+    status: complete
+    description: Fix import paths to match Edge Oracle conventions
+    prompt: >
+      In Edge Oracle, fix import paths in the Presentation Studio module:
+
+
+      1. Find the Supabase client location:
+         grep -rn "createClient.*supabase" src/lib/
+      2. Find the auth hook location:
+         grep -rn "useSupabaseAuth\|useAuth" src/context/ src/hooks/
+      3. Find the cn utility or create it if missing
+
+      4. Update ALL files in src/modules/presentation-studio/ to use correct
+      imports:
+         - Supabase: likely @/lib/supabase/client
+         - Auth: likely @/context/SupabaseAuthContext (useSupabaseAuth)
+         - Utils: @/lib/utils or create cn function
+      5. Run npm run build to verify imports work
+
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T19:57:55.352Z
+  - id: register-frontend-route
+    status: complete
+    description: Register frontend route in React router
+    prompt: >
+      In Edge Oracle, add the Presentation Studio route:
+
+
+      1. Find the main router config (check src/main.jsx, src/App.tsx, or
+      src/routes/)
+
+      2. Import PresentationStudio from @/modules/presentation-studio
+
+      3. Add route:
+         {
+           path: '/presentation-studio/*',
+           element: <PresentationStudio />,
+         }
+      4. Wrap in ProtectedRoute if other routes use it
+
+      5. Run npm run build to verify
+
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T19:59:09.320Z
+  - id: add-navigation
+    status: complete
+    description: Add navigation item to sidebar
+    prompt: >
+      In Edge Oracle, add Presentation Studio to navigation:
+
+
+      1. Find the sidebar/navigation component (check src/layout/,
+      src/components/Sidebar, src/components/Navigation)
+
+      2. Import Video icon from lucide-react
+
+      3. Add navigation item:
+         {
+           name: 'Presentation Studio',
+           href: '/presentation-studio',
+           icon: Video,
+         }
+      4. Place it in a logical location (Tools section or near content creation)
+
+      5. Run npm run build to verify
+
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T20:00:07.808Z
+  - id: update-tailwind-config
+    status: complete
+    description: Update Tailwind to scan modules directory
+    prompt: |
+      In Edge Oracle, update Tailwind configuration:
+
+      1. Find tailwind.config.js or tailwind.config.ts
+      2. Add to content array if not present:
+         './src/modules/**/*.{js,ts,jsx,tsx}'
+      3. Save the file
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T20:00:43.949Z
+  - id: create-database-tables
+    status: complete
+    description: Document database migration needs
+    prompt: >
+      In Edge Oracle, document the database migration:
+
+
+      1. Read src/modules/presentation-studio/database/schema.sql
+
+      2. Check if these tables already exist in Supabase types:
+         - presentation_templates
+         - presentation_projects
+         - presentation_render_jobs
+         - presentation_assets
+         - presentation_voice_settings
+         - presentation_brand_settings
+      3. Update ./audit/presentation-studio-integration.md with:
+         - List of tables to create
+         - SQL to run in Supabase dashboard
+         - Storage buckets needed (presentation-videos, presentation-assets, presentation-audio)
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T20:02:41.915Z
+  - id: verify-integration
+    status: complete
+    description: Verify build and document status
+    prompt: |
+      In Edge Oracle, verify the Presentation Studio integration:
+
+      1. Run: npm run build - fix any errors
+      2. Check for TypeScript errors in the module:
+         npx tsc --noEmit 2>&1 | grep -i presentation
+      3. Update ./audit/presentation-studio-integration.md with:
+         - Integration status
+         - Any remaining issues
+         - Manual steps needed (database migration, env vars)
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T20:05:25.753Z

@@ -1,0 +1,108 @@
+tasks:
+  - id: migrate-route-service
+    status: complete
+    description: Migrate routeService to Supabase
+    prompt: >
+      In Edge Oracle, migrate src/services/routeService.ts to Supabase:
+
+
+      1. Check if routes table exists in Supabase (check
+      src/lib/supabase/types.ts)
+
+      2. If not, the table may need to be created - document this in audit
+
+      3. Replace Firestore imports with Supabase client
+
+      4. Migrate all CRUD operations to Supabase queries
+
+      5. Replace onSnapshot with Supabase realtime if used
+
+      6. Run npm run build to verify
+
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T18:43:51.037Z
+  - id: migrate-route-sharing-service
+    status: complete
+    description: Migrate routeSharingService to Supabase
+    prompt: >
+      In Edge Oracle, migrate src/services/routeSharingService.ts to Supabase:
+
+
+      1. Replace Firestore imports with Supabase client
+
+      2. Migrate sharing operations to Supabase
+
+      3. If route_shares table doesn't exist, use JSONB on routes table or
+      document needed schema
+
+      4. Run npm run build to verify
+
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T18:46:28.179Z
+  - id: migrate-prep-reminder-service
+    status: complete
+    description: Migrate prepReminderService to Supabase
+    prompt: |
+      In Edge Oracle, migrate src/services/prepReminderService.ts to Supabase:
+
+      1. Replace Firestore imports with Supabase client
+      2. Check if prep_reminders or similar table exists
+      3. Migrate reminder CRUD operations
+      4. Run npm run build to verify
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T18:50:27.152Z
+  - id: migrate-ellevate-service
+    status: complete
+    description: Migrate ellevateIntegrationService to Supabase
+    prompt: >
+      In Edge Oracle, migrate src/services/ellevateIntegrationService.ts to
+      Supabase:
+
+
+      1. Replace Firestore imports with Supabase client
+
+      2. Check for ellevate_* tables in Supabase
+
+      3. Migrate integration operations
+
+      4. Keep any external API calls intact
+
+      5. Run npm run build to verify
+
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T18:54:53.049Z
+  - id: migrate-epic-department-service
+    status: complete
+    description: Migrate epicDepartmentService to Supabase
+    prompt: |
+      In Edge Oracle, migrate src/services/epicDepartmentService.js to Supabase:
+
+      1. Replace Firestore imports with Supabase client
+      2. Convert from .js to .ts if possible
+      3. Migrate department operations
+      4. Run npm run build to verify
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T18:56:20.952Z
+  - id: verify-phase3
+    status: complete
+    description: Verify Phase 3 migrations
+    prompt: >
+      In Edge Oracle, verify Phase 3 migrations:
+
+
+      1. Run: npm run build - fix any errors
+
+      2. Count remaining Firebase imports:
+         grep -rn "from.*firebase" src/ --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" | wc -l
+      3. List files still using Firebase
+
+      4. Update ./audit/firestore-migration-plan.md with Phase 3 status
+
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T18:58:11.581Z

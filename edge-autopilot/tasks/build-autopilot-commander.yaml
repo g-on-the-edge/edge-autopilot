@@ -1,0 +1,1496 @@
+name: Build Autopilot Commander UI
+tasks:
+  - id: setup-project-structure
+    description: Create project structure for Commander UI
+    prompt: |
+      In Edge Autopilot at /Users/g/VScode-Programs/Projects/edge-autopilot/edge-autopilot:
+      
+      Create the Commander UI project structure:
+      
+      1. Create these directories:
+         - src/commander/
+         - src/commander/components/
+         - src/commander/services/
+         - src/commander/hooks/
+         - src/commander/types/
+      
+      2. Create src/commander/index.html:
+         ```html
+         <!DOCTYPE html>
+         <html lang="en">
+           <head>
+             <meta charset="UTF-8" />
+             <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+             <title>Autopilot Commander</title>
+           </head>
+           <body>
+             <div id="root"></div>
+             <script type="module" src="./main.tsx"></script>
+           </body>
+         </html>
+         ```
+      
+      3. Create src/commander/main.tsx:
+         ```tsx
+         import React from 'react';
+         import ReactDOM from 'react-dom/client';
+         import App from './App';
+         import './styles.css';
+         
+         ReactDOM.createRoot(document.getElementById('root')!).render(
+           <React.StrictMode>
+             <App />
+           </React.StrictMode>
+         );
+         ```
+      
+      4. Create src/commander/styles.css with Tailwind directives:
+         ```css
+         @tailwind base;
+         @tailwind components;
+         @tailwind utilities;
+         ```
+      
+      Do not ask questions - just do it.
+
+  - id: create-types
+    description: Create TypeScript types
+    prompt: |
+      In Edge Autopilot, create src/commander/types/index.ts with all TypeScript types:
+      
+      ```typescript
+      export interface Project {
+        id: string;
+        name: string;
+        path: string;
+      }
+      
+      export interface Task {
+        id: string;
+        description: string;
+        prompt: string;
+        status: 'pending' | 'running' | 'complete' | 'failed';
+        completedAt?: string;
+        error?: string;
+      }
+      
+      export interface TaskFile {
+        name: string;
+        tasks: Task[];
+      }
+      
+      export interface LogEntry {
+        timestamp: Date;
+        type: 'info' | 'success' | 'error' | 'warning';
+        message: string;
+      }
+      
+      export interface SessionStats {
+        completed: number;
+        failed: number;
+        total: number;
+        duration: number;
+        filesChanged: number;
+      }
+      
+      export interface GenerateTasksRequest {
+        projectName: string;
+        projectPath: string;
+        description: string;
+      }
+      
+      export interface AutopilotStatus {
+        isRunning: boolean;
+        currentTask: string | null;
+        progress: number;
+      }
+      ```
+      
+      Do not ask questions - just do it.
+
+  - id: create-project-scanner-service
+    description: Create service to scan for projects
+    prompt: |
+      In Edge Autopilot, create src/commander/services/projectScanner.ts:
+      
+      This service scans the filesystem for available projects.
+      
+      ```typescript
+      import { Project } from '../types';
+      
+      const PROJECTS_BASE_PATH = '/Users/g/VScode-Programs/Projects';
+      
+      // Known projects (fallback if API not available)
+      const KNOWN_PROJECTS: Project[] = [
+        { id: 'edge-oracle', name: 'Edge Oracle', path: `${PROJECTS_BASE_PATH}/edge-oracle` },
+        { id: 'edge-autopilot', name: 'Edge Autopilot', path: `${PROJECTS_BASE_PATH}/edge-autopilot/edge-autopilot` },
+        { id: 'buyer-helper', name: 'Buyer Helper', path: `${PROJECTS_BASE_PATH}/buyer-helper` },
+      ];
+      
+      export async function getProjects(): Promise<Project[]> {
+        try {
+          const response = await fetch('/api/projects');
+          if (response.ok) {
+            return await response.json();
+          }
+        } catch (error) {
+          console.warn('Could not fetch projects from API, using defaults');
+        }
+        return KNOWN_PROJECTS;
+      }
+      
+      export function getDefaultProject(): Project {
+        return KNOWN_PROJECTS[0];
+      }
+      ```
+      
+      Do not ask questions - just do it.
+
+  - id: create-task-generator-service
+    description: Create AI task generator service
+    prompt: |
+      In Edge Autopilot, create src/commander/services/taskGenerator.ts:
+      
+      This service generates task prompts from natural language using Claude API.
+      
+      ```typescript
+      import { Task, GenerateTasksRequest } from '../types';
+      
+      const TASK_TEMPLATES = {
+        migrate: (project: string) => ({
+          id: 'migrate-service',
+          description: 'Migrate service to Supabase',
+          prompt: `In ${project}, migrate the service to Supabase:\n\n1. Find the Firebase service file\n2. Create Supabase equivalent\n3. Update all imports\n4. Remove Firebase dependencies\n5. Run npm run build to verify\n\nDo not ask questions - just do it.`,
+          status: 'pending' as const
+        }),
+        audit: (project: string) => ({
+          id: 'audit-feature',
+          description: 'Audit current implementation',
+          prompt: `In ${project}, audit the feature:\n\n1. Find all related files\n2. Document current state\n3. Identify issues or improvements\n4. Create ./audit/feature-audit.md\n\nDo not ask questions - just do it.`,
+          status: 'pending' as const
+        }),
+        fix: (project: string) => ({
+          id: 'implement-fix',
+          description: 'Implement the fix',
+          prompt: `In ${project}, implement the fix:\n\n1. Locate the problematic code\n2. Apply the fix\n3. Add error handling\n4. Run npm run build to verify\n\nDo not ask questions - just do it.`,
+          status: 'pending' as const
+        }),
+        verify: (project: string) => ({
+          id: 'verify-build',
+          description: 'Verify build and document',
+          prompt: `In ${project}, verify everything:\n\n1. Run npm run build\n2. Fix any errors\n3. Update documentation\n4. List remaining issues\n\nDo not ask questions - just do it.`,
+          status: 'pending' as const
+        })
+      };
+      
+      export async function generateTasks(request: GenerateTasksRequest): Promise<Task[]> {
+        const { projectName, description } = request;
+        const lowerDesc = description.toLowerCase();
+        const tasks: Task[] = [];
+        
+        // Always start with audit
+        tasks.push({
+          ...TASK_TEMPLATES.audit(projectName),
+          id: `audit-${Date.now()}`,
+          prompt: `In ${projectName}, audit for this task: "${description}"\n\n1. Find all related files using grep/find\n2. Document current implementation\n3. Identify what needs to change\n4. Create ./audit/task-${Date.now()}.md with findings\n\nDo not ask questions - just do it.`
+        });
+        
+        // Add specific tasks based on keywords
+        if (lowerDesc.includes('migrate') || lowerDesc.includes('supabase') || lowerDesc.includes('firebase')) {
+          tasks.push({
+            id: `migrate-${Date.now()}`,
+            description: 'Create Supabase implementation',
+            prompt: `In ${projectName}, migrate to Supabase:\n\n1. Create new Supabase service file\n2. Implement all CRUD operations\n3. Add proper TypeScript types\n4. Run npm run build to verify\n\nDo not ask questions - just do it.`,
+            status: 'pending'
+          });
+          tasks.push({
+            id: `update-imports-${Date.now()}`,
+            description: 'Update imports across codebase',
+            prompt: `In ${projectName}, update all imports:\n\n1. Find files importing the old service\n2. Update to import from new Supabase service\n3. Remove Firebase imports\n4. Run npm run build to verify\n\nDo not ask questions - just do it.`,
+            status: 'pending'
+          });
+        }
+        
+        if (lowerDesc.includes('fix') || lowerDesc.includes('bug') || lowerDesc.includes('error')) {
+          tasks.push({
+            id: `fix-${Date.now()}`,
+            description: 'Implement the fix',
+            prompt: `In ${projectName}, fix the issue: "${description}"\n\n1. Locate the problematic code\n2. Apply the necessary fix\n3. Add error handling if needed\n4. Run npm run build to verify\n\nDo not ask questions - just do it.`,
+            status: 'pending'
+          });
+        }
+        
+        if (lowerDesc.includes('feature') || lowerDesc.includes('add') || lowerDesc.includes('create') || lowerDesc.includes('build') || lowerDesc.includes('implement')) {
+          tasks.push({
+            id: `implement-${Date.now()}`,
+            description: 'Implement the feature',
+            prompt: `In ${projectName}, implement: "${description}"\n\n1. Create necessary components/services\n2. Add proper TypeScript types\n3. Connect to existing code\n4. Style with existing design system\n5. Run npm run build to verify\n\nDo not ask questions - just do it.`,
+            status: 'pending'
+          });
+        }
+        
+        if (lowerDesc.includes('integrate') || lowerDesc.includes('module')) {
+          tasks.push({
+            id: `integrate-${Date.now()}`,
+            description: 'Integrate the module',
+            prompt: `In ${projectName}, integrate the module:\n\n1. Verify module files are present\n2. Fix import paths to match project conventions\n3. Register routes in router\n4. Add navigation item\n5. Update Tailwind config if needed\n6. Run npm run build to verify\n\nDo not ask questions - just do it.`,
+            status: 'pending'
+          });
+        }
+        
+        // Always end with verification
+        tasks.push({
+          id: `verify-${Date.now()}`,
+          description: 'Verify and document',
+          prompt: `In ${projectName}, final verification:\n\n1. Run npm run build - fix any errors\n2. Run npx tsc --noEmit for TypeScript check\n3. Search for any remaining issues\n4. Document what was completed\n\nDo not ask questions - just do it.`,
+          status: 'pending'
+        });
+        
+        return tasks;
+      }
+      
+      export function tasksToYaml(tasks: Task[], name: string): string {
+        const yaml = `name: ${name}
+tasks:
+${tasks.map(task => `  - id: ${task.id}
+    description: ${task.description}
+    prompt: |
+${task.prompt.split('\n').map(line => `      ${line}`).join('\n')}`).join('\n\n')}
+`;
+        return yaml;
+      }
+      ```
+      
+      Do not ask questions - just do it.
+
+  - id: create-autopilot-runner-service
+    description: Create autopilot runner service
+    prompt: |
+      In Edge Autopilot, create src/commander/services/autopilotRunner.ts:
+      
+      This service manages running autopilot and streaming output.
+      
+      ```typescript
+      import { Task, LogEntry, SessionStats } from '../types';
+      
+      type LogCallback = (log: LogEntry) => void;
+      type StatsCallback = (stats: Partial<SessionStats>) => void;
+      type TaskCallback = (taskId: string, status: Task['status']) => void;
+      
+      class AutopilotRunner {
+        private ws: WebSocket | null = null;
+        private isRunning = false;
+        private onLog: LogCallback | null = null;
+        private onStats: StatsCallback | null = null;
+        private onTaskUpdate: TaskCallback | null = null;
+        
+        connect() {
+          // Connect to autopilot dashboard WebSocket
+          this.ws = new WebSocket('ws://localhost:3847');
+          
+          this.ws.onmessage = (event) => {
+            try {
+              const data = JSON.parse(event.data);
+              if (data.type === 'stats') {
+                this.onStats?.({
+                  completed: data.tasksCompleted,
+                  failed: data.tasksFailed,
+                  filesChanged: data.filesChanged
+                });
+              } else if (data.type === 'log') {
+                this.onLog?.({
+                  timestamp: new Date(),
+                  type: data.level || 'info',
+                  message: data.message
+                });
+              } else if (data.type === 'taskUpdate') {
+                this.onTaskUpdate?.(data.taskId, data.status);
+              }
+            } catch (e) {
+              console.error('Failed to parse WebSocket message', e);
+            }
+          };
+          
+          this.ws.onerror = () => {
+            this.onLog?.({
+              timestamp: new Date(),
+              type: 'warning',
+              message: 'WebSocket connection error - dashboard may not be running'
+            });
+          };
+        }
+        
+        disconnect() {
+          this.ws?.close();
+          this.ws = null;
+        }
+        
+        setCallbacks(onLog: LogCallback, onStats: StatsCallback, onTaskUpdate: TaskCallback) {
+          this.onLog = onLog;
+          this.onStats = onStats;
+          this.onTaskUpdate = onTaskUpdate;
+        }
+        
+        async runTasks(yamlPath: string): Promise<void> {
+          this.isRunning = true;
+          
+          this.onLog?.({
+            timestamp: new Date(),
+            type: 'info',
+            message: `🚀 Starting autopilot with ${yamlPath}`
+          });
+          
+          try {
+            const response = await fetch('/api/autopilot/run', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ taskFile: yamlPath })
+            });
+            
+            if (!response.ok) {
+              throw new Error('Failed to start autopilot');
+            }
+            
+            this.onLog?.({
+              timestamp: new Date(),
+              type: 'success',
+              message: 'Autopilot process started'
+            });
+          } catch (error) {
+            this.onLog?.({
+              timestamp: new Date(),
+              type: 'error',
+              message: `Failed to start: ${error}`
+            });
+            this.isRunning = false;
+          }
+        }
+        
+        async stop(): Promise<void> {
+          try {
+            await fetch('/api/autopilot/stop', { method: 'POST' });
+            this.isRunning = false;
+            this.onLog?.({
+              timestamp: new Date(),
+              type: 'warning',
+              message: '⚠️ Autopilot stopped by user'
+            });
+          } catch (error) {
+            console.error('Failed to stop autopilot', error);
+          }
+        }
+        
+        getIsRunning(): boolean {
+          return this.isRunning;
+        }
+      }
+      
+      export const autopilotRunner = new AutopilotRunner();
+      ```
+      
+      Do not ask questions - just do it.
+
+  - id: create-project-selector-component
+    description: Create ProjectSelector component
+    prompt: |
+      In Edge Autopilot, create src/commander/components/ProjectSelector.tsx:
+      
+      ```tsx
+      import React from 'react';
+      import { ChevronDown, Folder } from 'lucide-react';
+      import { Project } from '../types';
+      
+      interface ProjectSelectorProps {
+        projects: Project[];
+        selected: Project;
+        onChange: (project: Project) => void;
+        disabled?: boolean;
+      }
+      
+      export function ProjectSelector({ projects, selected, onChange, disabled }: ProjectSelectorProps) {
+        return (
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-slate-300 mb-2 flex items-center gap-2">
+              <Folder className="w-4 h-4" />
+              Project
+            </label>
+            <div className="relative">
+              <select
+                value={selected.id}
+                onChange={(e) => {
+                  const project = projects.find(p => p.id === e.target.value);
+                  if (project) onChange(project);
+                }}
+                disabled={disabled}
+                className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 pr-10 appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+              >
+                {projects.map(project => (
+                  <option key={project.id} value={project.id}>
+                    {project.name}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
+            </div>
+            <p className="text-xs text-slate-500 mt-1 truncate" title={selected.path}>
+              {selected.path}
+            </p>
+          </div>
+        );
+      }
+      ```
+      
+      Do not ask questions - just do it.
+
+  - id: create-task-input-component
+    description: Create TaskInput component
+    prompt: |
+      In Edge Autopilot, create src/commander/components/TaskInput.tsx:
+      
+      ```tsx
+      import React, { useState } from 'react';
+      import { Sparkles, Loader2, Trash2, Lightbulb } from 'lucide-react';
+      
+      interface TaskInputProps {
+        value: string;
+        onChange: (value: string) => void;
+        onGenerate: () => void;
+        onClear: () => void;
+        isGenerating: boolean;
+        isRunning: boolean;
+      }
+      
+      const SUGGESTIONS = [
+        'Migrate the auth service to Supabase',
+        'Fix the login redirect bug',
+        'Add PDF export to the dashboard',
+        'Audit the notification system',
+        'Integrate the new module from src/modules/',
+      ];
+      
+      export function TaskInput({ value, onChange, onGenerate, onClear, isGenerating, isRunning }: TaskInputProps) {
+        const [showSuggestions, setShowSuggestions] = useState(false);
+        
+        return (
+          <div className="p-6 bg-slate-800/50 border-b border-slate-700">
+            <label className="block text-sm font-medium text-slate-300 mb-2">
+              What do you want to accomplish?
+            </label>
+            <div className="flex gap-3">
+              <div className="flex-1 relative">
+                <textarea
+                  value={value}
+                  onChange={(e) => onChange(e.target.value)}
+                  onFocus={() => setShowSuggestions(true)}
+                  onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                  placeholder="Describe your task in natural language..."
+                  disabled={isRunning}
+                  className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 min-h-[100px] resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-slate-500 disabled:opacity-50"
+                />
+                {showSuggestions && !value && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-slate-800 border border-slate-600 rounded-lg shadow-xl z-10 overflow-hidden">
+                    <div className="px-3 py-2 text-xs text-slate-400 border-b border-slate-700 flex items-center gap-2">
+                      <Lightbulb className="w-3 h-3" />
+                      Suggestions
+                    </div>
+                    {SUGGESTIONS.map((suggestion, i) => (
+                      <button
+                        key={i}
+                        onClick={() => {
+                          onChange(suggestion);
+                          setShowSuggestions(false);
+                        }}
+                        className="w-full text-left px-3 py-2 text-sm hover:bg-slate-700 transition-colors"
+                      >
+                        {suggestion}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div className="flex flex-col gap-2">
+                <button
+                  onClick={onGenerate}
+                  disabled={isGenerating || isRunning || !value.trim()}
+                  className="px-6 py-3 bg-gradient-to-r from-blue-500 to-teal-400 hover:from-blue-600 hover:to-teal-500 disabled:from-slate-600 disabled:to-slate-600 disabled:cursor-not-allowed rounded-lg font-medium transition-all flex items-center gap-2"
+                >
+                  {isGenerating ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <Sparkles className="w-5 h-5" />
+                  )}
+                  Generate
+                </button>
+                <button
+                  onClick={onClear}
+                  disabled={isRunning}
+                  className="px-6 py-3 bg-slate-700 hover:bg-slate-600 disabled:bg-slate-800 disabled:cursor-not-allowed rounded-lg font-medium transition-colors flex items-center gap-2"
+                >
+                  <Trash2 className="w-5 h-5" />
+                  Clear
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      }
+      ```
+      
+      Do not ask questions - just do it.
+
+  - id: create-task-list-component
+    description: Create TaskList component
+    prompt: |
+      In Edge Autopilot, create src/commander/components/TaskList.tsx:
+      
+      ```tsx
+      import React, { useState } from 'react';
+      import { Play, Square, Clock, Loader2, CheckCircle, XCircle, ChevronDown, ChevronUp, Trash2, GripVertical } from 'lucide-react';
+      import { Task } from '../types';
+      
+      interface TaskListProps {
+        tasks: Task[];
+        onUpdateTask: (index: number, prompt: string) => void;
+        onRemoveTask: (index: number) => void;
+        onRun: () => void;
+        onStop: () => void;
+        isRunning: boolean;
+      }
+      
+      export function TaskList({ tasks, onUpdateTask, onRemoveTask, onRun, onStop, isRunning }: TaskListProps) {
+        const [expandedTask, setExpandedTask] = useState<number | null>(null);
+        
+        if (tasks.length === 0) {
+          return (
+            <div className="flex-1 flex items-center justify-center text-slate-500">
+              <div className="text-center">
+                <Sparkles className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                <p>Describe what you want to do and click Generate</p>
+                <p className="text-sm mt-1">AI will create the task sequence for you</p>
+              </div>
+            </div>
+          );
+        }
+        
+        const getStatusIcon = (status: Task['status']) => {
+          switch (status) {
+            case 'running': return <Loader2 className="w-5 h-5 text-blue-400 animate-spin" />;
+            case 'complete': return <CheckCircle className="w-5 h-5 text-green-400" />;
+            case 'failed': return <XCircle className="w-5 h-5 text-red-400" />;
+            default: return <Clock className="w-5 h-5 text-slate-400" />;
+          }
+        };
+        
+        const getStatusBorder = (status: Task['status']) => {
+          switch (status) {
+            case 'running': return 'border-blue-500';
+            case 'complete': return 'border-green-500';
+            case 'failed': return 'border-red-500';
+            default: return 'border-slate-700';
+          }
+        };
+        
+        return (
+          <div className="flex-1 overflow-auto p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold">Tasks ({tasks.length})</h2>
+              <button
+                onClick={isRunning ? onStop : onRun}
+                className={`px-6 py-3 rounded-lg font-medium transition-all flex items-center gap-2 ${
+                  isRunning 
+                    ? 'bg-red-500 hover:bg-red-600' 
+                    : 'bg-green-500 hover:bg-green-600'
+                }`}
+              >
+                {isRunning ? (
+                  <>
+                    <Square className="w-5 h-5" />
+                    Stop
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-5 h-5" />
+                    Run Autopilot
+                  </>
+                )}
+              </button>
+            </div>
+            
+            <div className="space-y-3">
+              {tasks.map((task, index) => (
+                <div 
+                  key={task.id}
+                  className={`bg-slate-800 rounded-lg border transition-all ${getStatusBorder(task.status)}`}
+                >
+                  <div 
+                    className="flex items-center justify-between p-4 cursor-pointer"
+                    onClick={() => setExpandedTask(expandedTask === index ? null : index)}
+                  >
+                    <div className="flex items-center gap-3">
+                      <GripVertical className="w-4 h-4 text-slate-500" />
+                      {getStatusIcon(task.status)}
+                      <div>
+                        <div className="font-medium">{task.description}</div>
+                        <div className="text-xs text-slate-500">Task {index + 1} of {tasks.length}</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onRemoveTask(index);
+                        }}
+                        disabled={isRunning}
+                        className="p-2 hover:bg-slate-700 rounded-lg transition-colors disabled:opacity-50"
+                      >
+                        <Trash2 className="w-4 h-4 text-slate-400" />
+                      </button>
+                      {expandedTask === index ? (
+                        <ChevronUp className="w-5 h-5 text-slate-400" />
+                      ) : (
+                        <ChevronDown className="w-5 h-5 text-slate-400" />
+                      )}
+                    </div>
+                  </div>
+                  
+                  {expandedTask === index && (
+                    <div className="px-4 pb-4">
+                      <textarea
+                        value={task.prompt}
+                        onChange={(e) => onUpdateTask(index, e.target.value)}
+                        disabled={isRunning}
+                        className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 min-h-[150px] text-sm font-mono resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                      />
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      }
+      
+      // Need this for the empty state
+      function Sparkles(props: React.SVGProps<SVGSVGElement>) {
+        return (
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+            <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+          </svg>
+        );
+      }
+      ```
+      
+      Do not ask questions - just do it.
+
+  - id: create-log-panel-component
+    description: Create LogPanel component
+    prompt: |
+      In Edge Autopilot, create src/commander/components/LogPanel.tsx:
+      
+      ```tsx
+      import React, { useRef, useEffect, useState } from 'react';
+      import { Terminal, FileCode, GitBranch, Download } from 'lucide-react';
+      import { LogEntry } from '../types';
+      
+      interface LogPanelProps {
+        logs: LogEntry[];
+        changedFiles: string[];
+        onCommit: () => void;
+      }
+      
+      export function LogPanel({ logs, changedFiles, onCommit }: LogPanelProps) {
+        const [activeTab, setActiveTab] = useState<'logs' | 'files'>('logs');
+        const logsEndRef = useRef<HTMLDivElement>(null);
+        
+        useEffect(() => {
+          logsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        }, [logs]);
+        
+        const getLogStyle = (type: LogEntry['type']) => {
+          switch (type) {
+            case 'error': return 'bg-red-500/10 text-red-400';
+            case 'success': return 'bg-green-500/10 text-green-400';
+            case 'warning': return 'bg-amber-500/10 text-amber-400';
+            default: return 'bg-slate-700/50 text-slate-300';
+          }
+        };
+        
+        const downloadLogs = () => {
+          const content = logs.map(l => 
+            `[${l.timestamp.toISOString()}] [${l.type.toUpperCase()}] ${l.message}`
+          ).join('\n');
+          const blob = new Blob([content], { type: 'text/plain' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `autopilot-logs-${Date.now()}.txt`;
+          a.click();
+        };
+        
+        return (
+          <div className="w-96 bg-slate-800 border-l border-slate-700 flex flex-col">
+            {/* Tabs */}
+            <div className="flex border-b border-slate-700">
+              <button
+                onClick={() => setActiveTab('logs')}
+                className={`flex-1 px-4 py-3 text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
+                  activeTab === 'logs' ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <Terminal className="w-4 h-4" />
+                Logs
+              </button>
+              <button
+                onClick={() => setActiveTab('files')}
+                className={`flex-1 px-4 py-3 text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
+                  activeTab === 'files' ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <FileCode className="w-4 h-4" />
+                Files ({changedFiles.length})
+              </button>
+            </div>
+      
+            {/* Content */}
+            <div className="flex-1 overflow-auto p-4">
+              {activeTab === 'logs' ? (
+                <div className="space-y-2 font-mono text-sm">
+                  {logs.length === 0 ? (
+                    <p className="text-slate-500 text-center py-8">
+                      No logs yet. Run autopilot to see output.
+                    </p>
+                  ) : (
+                    <>
+                      {logs.map((log, index) => (
+                        <div 
+                          key={index}
+                          className={`px-3 py-2 rounded ${getLogStyle(log.type)}`}
+                        >
+                          <span className="text-slate-500 mr-2">
+                            {log.timestamp.toLocaleTimeString()}
+                          </span>
+                          {log.message}
+                        </div>
+                      ))}
+                      <div ref={logsEndRef} />
+                    </>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {changedFiles.length === 0 ? (
+                    <p className="text-slate-500 text-center py-8">
+                      No files changed yet.
+                    </p>
+                  ) : (
+                    changedFiles.map((file, index) => (
+                      <div 
+                        key={index}
+                        className="flex items-center gap-3 px-3 py-2 bg-slate-700/50 rounded"
+                      >
+                        <FileCode className="w-4 h-4 text-green-400" />
+                        <span className="text-sm truncate">{file}</span>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
+      
+            {/* Footer */}
+            <div className="border-t border-slate-700 p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3 text-sm">
+                  <GitBranch className="w-5 h-5 text-slate-400" />
+                  <div>
+                    <div className="font-medium">main</div>
+                    <div className="text-xs text-slate-500">{changedFiles.length} files changed</div>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <button 
+                    onClick={downloadLogs}
+                    disabled={logs.length === 0}
+                    className="p-2 bg-slate-700 hover:bg-slate-600 disabled:opacity-50 rounded transition-colors"
+                    title="Download logs"
+                  >
+                    <Download className="w-4 h-4" />
+                  </button>
+                  <button 
+                    onClick={onCommit}
+                    disabled={changedFiles.length === 0}
+                    className="px-3 py-1 bg-blue-500 hover:bg-blue-600 disabled:bg-slate-700 disabled:cursor-not-allowed rounded text-sm transition-colors"
+                  >
+                    Commit
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
+      ```
+      
+      Do not ask questions - just do it.
+
+  - id: create-stats-panel-component
+    description: Create StatsPanel component
+    prompt: |
+      In Edge Autopilot, create src/commander/components/StatsPanel.tsx:
+      
+      ```tsx
+      import React from 'react';
+      import { CheckCircle, XCircle, ListTodo, Clock } from 'lucide-react';
+      import { SessionStats } from '../types';
+      
+      interface StatsPanelProps {
+        stats: SessionStats;
+      }
+      
+      export function StatsPanel({ stats }: StatsPanelProps) {
+        const formatDuration = (seconds: number) => {
+          if (seconds < 60) return `${seconds}s`;
+          const mins = Math.floor(seconds / 60);
+          const secs = seconds % 60;
+          return `${mins}m ${secs}s`;
+        };
+        
+        return (
+          <div className="bg-slate-700/50 rounded-lg p-4">
+            <h3 className="text-sm font-medium text-slate-300 mb-3">Session Stats</h3>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-slate-800 rounded-lg p-3 text-center">
+                <CheckCircle className="w-5 h-5 text-green-400 mx-auto mb-1" />
+                <div className="text-2xl font-bold text-green-400">{stats.completed}</div>
+                <div className="text-xs text-slate-400">Completed</div>
+              </div>
+              <div className="bg-slate-800 rounded-lg p-3 text-center">
+                <XCircle className="w-5 h-5 text-red-400 mx-auto mb-1" />
+                <div className="text-2xl font-bold text-red-400">{stats.failed}</div>
+                <div className="text-xs text-slate-400">Failed</div>
+              </div>
+              <div className="bg-slate-800 rounded-lg p-3 text-center">
+                <ListTodo className="w-5 h-5 text-blue-400 mx-auto mb-1" />
+                <div className="text-2xl font-bold text-blue-400">{stats.total}</div>
+                <div className="text-xs text-slate-400">Total Tasks</div>
+              </div>
+              <div className="bg-slate-800 rounded-lg p-3 text-center">
+                <Clock className="w-5 h-5 text-amber-400 mx-auto mb-1" />
+                <div className="text-2xl font-bold text-amber-400">{formatDuration(stats.duration)}</div>
+                <div className="text-xs text-slate-400">Duration</div>
+              </div>
+            </div>
+          </div>
+        );
+      }
+      ```
+      
+      Do not ask questions - just do it.
+
+  - id: create-template-buttons-component
+    description: Create TemplateButtons component
+    prompt: |
+      In Edge Autopilot, create src/commander/components/TemplateButtons.tsx:
+      
+      ```tsx
+      import React from 'react';
+      import { ArrowRightLeft, Search, Wrench, PlusCircle, Package } from 'lucide-react';
+      
+      interface Template {
+        id: string;
+        name: string;
+        description: string;
+        icon: React.ReactNode;
+      }
+      
+      const TEMPLATES: Template[] = [
+        { id: 'migrate', name: 'Migrate to Supabase', description: 'Firebase → Supabase', icon: <ArrowRightLeft className="w-4 h-4" /> },
+        { id: 'audit', name: 'Audit Feature', description: 'Analyze & document', icon: <Search className="w-4 h-4" /> },
+        { id: 'fix', name: 'Fix & Verify', description: 'Fix issues, run build', icon: <Wrench className="w-4 h-4" /> },
+        { id: 'feature', name: 'Add Feature', description: 'Implement new feature', icon: <PlusCircle className="w-4 h-4" /> },
+        { id: 'integrate', name: 'Integrate Module', description: 'Add external module', icon: <Package className="w-4 h-4" /> },
+      ];
+      
+      interface TemplateButtonsProps {
+        onSelect: (description: string) => void;
+        disabled?: boolean;
+      }
+      
+      export function TemplateButtons({ onSelect, disabled }: TemplateButtonsProps) {
+        return (
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-slate-300 mb-2">
+              Quick Templates
+            </label>
+            <div className="space-y-2">
+              {TEMPLATES.map(template => (
+                <button
+                  key={template.id}
+                  onClick={() => onSelect(template.description)}
+                  disabled={disabled}
+                  className="w-full text-left px-3 py-2 bg-slate-700 hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors flex items-center gap-3"
+                >
+                  <span className="text-slate-400">{template.icon}</span>
+                  <div>
+                    <div className="text-sm font-medium">{template.name}</div>
+                    <div className="text-xs text-slate-400">{template.description}</div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        );
+      }
+      ```
+      
+      Do not ask questions - just do it.
+
+  - id: create-component-exports
+    description: Create component index exports
+    prompt: |
+      In Edge Autopilot, create src/commander/components/index.ts:
+      
+      ```typescript
+      export { ProjectSelector } from './ProjectSelector';
+      export { TaskInput } from './TaskInput';
+      export { TaskList } from './TaskList';
+      export { LogPanel } from './LogPanel';
+      export { StatsPanel } from './StatsPanel';
+      export { TemplateButtons } from './TemplateButtons';
+      ```
+      
+      Do not ask questions - just do it.
+
+  - id: create-main-app
+    description: Create main App component
+    prompt: |
+      In Edge Autopilot, create src/commander/App.tsx:
+      
+      ```tsx
+      import React, { useState, useEffect } from 'react';
+      import { Zap, Settings, Moon, Sun } from 'lucide-react';
+      import { ProjectSelector, TaskInput, TaskList, LogPanel, StatsPanel, TemplateButtons } from './components';
+      import { getProjects, getDefaultProject } from './services/projectScanner';
+      import { generateTasks, tasksToYaml } from './services/taskGenerator';
+      import { Project, Task, LogEntry, SessionStats } from './types';
+      
+      export default function App() {
+        const [projects, setProjects] = useState<Project[]>([]);
+        const [selectedProject, setSelectedProject] = useState<Project>(getDefaultProject());
+        const [taskDescription, setTaskDescription] = useState('');
+        const [tasks, setTasks] = useState<Task[]>([]);
+        const [isGenerating, setIsGenerating] = useState(false);
+        const [isRunning, setIsRunning] = useState(false);
+        const [logs, setLogs] = useState<LogEntry[]>([]);
+        const [changedFiles, setChangedFiles] = useState<string[]>([]);
+        const [autoCommit, setAutoCommit] = useState(true);
+        const [stats, setStats] = useState<SessionStats>({
+          completed: 0,
+          failed: 0,
+          total: 0,
+          duration: 0,
+          filesChanged: 0
+        });
+        
+        useEffect(() => {
+          getProjects().then(setProjects);
+        }, []);
+        
+        const handleGenerate = async () => {
+          if (!taskDescription.trim()) return;
+          
+          setIsGenerating(true);
+          try {
+            const generatedTasks = await generateTasks({
+              projectName: selectedProject.name,
+              projectPath: selectedProject.path,
+              description: taskDescription
+            });
+            setTasks(generatedTasks);
+            setStats(s => ({ ...s, total: generatedTasks.length }));
+            addLog('success', `Generated ${generatedTasks.length} tasks`);
+          } catch (error) {
+            addLog('error', `Failed to generate tasks: ${error}`);
+          }
+          setIsGenerating(false);
+        };
+        
+        const handleClear = () => {
+          setTasks([]);
+          setLogs([]);
+          setChangedFiles([]);
+          setStats({ completed: 0, failed: 0, total: 0, duration: 0, filesChanged: 0 });
+          setTaskDescription('');
+        };
+        
+        const handleRun = async () => {
+          if (tasks.length === 0) return;
+          
+          setIsRunning(true);
+          addLog('info', '🚀 Starting Autopilot...');
+          const startTime = Date.now();
+          
+          // Simulate running tasks (in real version, this spawns autopilot process)
+          for (let i = 0; i < tasks.length; i++) {
+            const task = tasks[i];
+            
+            setTasks(prev => prev.map((t, idx) => 
+              idx === i ? { ...t, status: 'running' } : t
+            ));
+            
+            addLog('info', `📝 Running: ${task.description}`);
+            
+            // Simulate task execution
+            await new Promise(resolve => setTimeout(resolve, 2000 + Math.random() * 2000));
+            
+            const success = Math.random() > 0.1;
+            
+            setTasks(prev => prev.map((t, idx) => 
+              idx === i ? { ...t, status: success ? 'complete' : 'failed' } : t
+            ));
+            
+            if (success) {
+              setStats(prev => ({ ...prev, completed: prev.completed + 1 }));
+              addLog('success', `✅ Completed: ${task.description}`);
+              setChangedFiles(prev => [...prev, `src/${task.id.split('-')[0]}.ts`]);
+            } else {
+              setStats(prev => ({ ...prev, failed: prev.failed + 1 }));
+              addLog('error', `❌ Failed: ${task.description}`);
+            }
+            
+            setStats(prev => ({ 
+              ...prev, 
+              duration: Math.floor((Date.now() - startTime) / 1000),
+              filesChanged: changedFiles.length + 1
+            }));
+          }
+          
+          addLog('success', '🎉 Autopilot complete!');
+          
+          if (autoCommit && changedFiles.length > 0) {
+            addLog('info', '📦 Auto-committing changes...');
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            addLog('success', '✅ Changes committed!');
+          }
+          
+          setIsRunning(false);
+        };
+        
+        const handleStop = () => {
+          setIsRunning(false);
+          addLog('warning', '⚠️ Autopilot stopped by user');
+        };
+        
+        const handleCommit = () => {
+          addLog('info', '📦 Committing changes...');
+          setTimeout(() => {
+            addLog('success', '✅ Changes committed and pushed!');
+          }, 1000);
+        };
+        
+        const addLog = (type: LogEntry['type'], message: string) => {
+          setLogs(prev => [...prev, { timestamp: new Date(), type, message }]);
+        };
+        
+        const updateTaskPrompt = (index: number, prompt: string) => {
+          setTasks(prev => prev.map((t, idx) => 
+            idx === index ? { ...t, prompt } : t
+          ));
+        };
+        
+        const removeTask = (index: number) => {
+          setTasks(prev => prev.filter((_, idx) => idx !== index));
+          setStats(prev => ({ ...prev, total: prev.total - 1 }));
+        };
+        
+        return (
+          <div className="min-h-screen bg-slate-900 text-white">
+            {/* Header */}
+            <header className="bg-slate-800 border-b border-slate-700 px-6 py-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-teal-400 rounded-lg flex items-center justify-center">
+                    <Zap className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h1 className="text-xl font-bold">Autopilot Commander</h1>
+                    <p className="text-sm text-slate-400">AI-powered task automation</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4">
+                  <label className="flex items-center gap-2 text-sm cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      checked={autoCommit} 
+                      onChange={(e) => setAutoCommit(e.target.checked)}
+                      className="w-4 h-4 rounded bg-slate-700 border-slate-600 text-blue-500 focus:ring-blue-500"
+                    />
+                    Auto-commit on complete
+                  </label>
+                  <button className="p-2 hover:bg-slate-700 rounded-lg transition-colors">
+                    <Settings className="w-5 h-5 text-slate-400" />
+                  </button>
+                </div>
+              </div>
+            </header>
+      
+            <div className="flex h-[calc(100vh-73px)]">
+              {/* Left Panel */}
+              <div className="w-72 bg-slate-800 border-r border-slate-700 p-4 flex flex-col overflow-auto">
+                <ProjectSelector
+                  projects={projects.length > 0 ? projects : [selectedProject]}
+                  selected={selectedProject}
+                  onChange={setSelectedProject}
+                  disabled={isRunning}
+                />
+                
+                <TemplateButtons 
+                  onSelect={setTaskDescription}
+                  disabled={isRunning}
+                />
+                
+                <div className="mt-auto">
+                  <StatsPanel stats={stats} />
+                </div>
+              </div>
+      
+              {/* Center Panel */}
+              <div className="flex-1 flex flex-col overflow-hidden">
+                <TaskInput
+                  value={taskDescription}
+                  onChange={setTaskDescription}
+                  onGenerate={handleGenerate}
+                  onClear={handleClear}
+                  isGenerating={isGenerating}
+                  isRunning={isRunning}
+                />
+                
+                <TaskList
+                  tasks={tasks}
+                  onUpdateTask={updateTaskPrompt}
+                  onRemoveTask={removeTask}
+                  onRun={handleRun}
+                  onStop={handleStop}
+                  isRunning={isRunning}
+                />
+              </div>
+      
+              {/* Right Panel */}
+              <LogPanel
+                logs={logs}
+                changedFiles={changedFiles}
+                onCommit={handleCommit}
+              />
+            </div>
+          </div>
+        );
+      }
+      ```
+      
+      Do not ask questions - just do it.
+
+  - id: create-vite-config
+    description: Create Vite config for Commander
+    prompt: |
+      In Edge Autopilot, create commander.vite.config.ts:
+      
+      ```typescript
+      import { defineConfig } from 'vite';
+      import react from '@vitejs/plugin-react';
+      import path from 'path';
+      
+      export default defineConfig({
+        plugins: [react()],
+        root: 'src/commander',
+        build: {
+          outDir: '../../dist/commander',
+          emptyOutDir: true
+        },
+        resolve: {
+          alias: {
+            '@': path.resolve(__dirname, 'src/commander')
+          }
+        },
+        server: {
+          port: 3848,
+          proxy: {
+            '/api': {
+              target: 'http://localhost:3847',
+              changeOrigin: true
+            }
+          }
+        }
+      });
+      ```
+      
+      Also update package.json to add the commander script:
+      
+      In the "scripts" section, add:
+      ```json
+      "commander": "vite --config commander.vite.config.ts",
+      "commander:build": "vite build --config commander.vite.config.ts"
+      ```
+      
+      Do not ask questions - just do it.
+
+  - id: create-api-server
+    description: Create API server for Commander
+    prompt: |
+      In Edge Autopilot, create src/commander/server.ts:
+      
+      This Express server handles API requests from the Commander UI.
+      
+      ```typescript
+      import express from 'express';
+      import cors from 'cors';
+      import { spawn, ChildProcess } from 'child_process';
+      import path from 'path';
+      import fs from 'fs';
+      
+      const app = express();
+      const PORT = 3849;
+      
+      app.use(cors());
+      app.use(express.json());
+      
+      let autopilotProcess: ChildProcess | null = null;
+      
+      // Get available projects
+      app.get('/api/projects', (req, res) => {
+        const projectsDir = '/Users/g/VScode-Programs/Projects';
+        try {
+          const dirs = fs.readdirSync(projectsDir, { withFileTypes: true })
+            .filter(d => d.isDirectory() && !d.name.startsWith('.'))
+            .map(d => ({
+              id: d.name,
+              name: d.name.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
+              path: path.join(projectsDir, d.name)
+            }));
+          res.json(dirs);
+        } catch (error) {
+          res.status(500).json({ error: 'Failed to scan projects' });
+        }
+      });
+      
+      // Save task file
+      app.post('/api/tasks/save', (req, res) => {
+        const { filename, content } = req.body;
+        const tasksDir = path.join(__dirname, '../../tasks');
+        
+        try {
+          if (!fs.existsSync(tasksDir)) {
+            fs.mkdirSync(tasksDir, { recursive: true });
+          }
+          fs.writeFileSync(path.join(tasksDir, filename), content);
+          res.json({ success: true, path: path.join(tasksDir, filename) });
+        } catch (error) {
+          res.status(500).json({ error: 'Failed to save task file' });
+        }
+      });
+      
+      // Run autopilot
+      app.post('/api/autopilot/run', (req, res) => {
+        const { taskFile } = req.body;
+        
+        if (autopilotProcess) {
+          return res.status(400).json({ error: 'Autopilot already running' });
+        }
+        
+        const cliPath = path.join(__dirname, '../cli.js');
+        autopilotProcess = spawn('node', [cliPath, 'autopilot', '-t', taskFile], {
+          cwd: path.join(__dirname, '../..'),
+          stdio: ['pipe', 'pipe', 'pipe']
+        });
+        
+        autopilotProcess.stdout?.on('data', (data) => {
+          console.log(`[Autopilot] ${data}`);
+        });
+        
+        autopilotProcess.stderr?.on('data', (data) => {
+          console.error(`[Autopilot Error] ${data}`);
+        });
+        
+        autopilotProcess.on('close', (code) => {
+          console.log(`Autopilot exited with code ${code}`);
+          autopilotProcess = null;
+        });
+        
+        res.json({ success: true, message: 'Autopilot started' });
+      });
+      
+      // Stop autopilot
+      app.post('/api/autopilot/stop', (req, res) => {
+        if (autopilotProcess) {
+          autopilotProcess.kill('SIGTERM');
+          autopilotProcess = null;
+          res.json({ success: true, message: 'Autopilot stopped' });
+        } else {
+          res.json({ success: false, message: 'No autopilot process running' });
+        }
+      });
+      
+      // Get autopilot status
+      app.get('/api/autopilot/status', (req, res) => {
+        res.json({
+          isRunning: autopilotProcess !== null
+        });
+      });
+      
+      app.listen(PORT, () => {
+        console.log(`Commander API server running on http://localhost:${PORT}`);
+      });
+      ```
+      
+      Add to package.json scripts:
+      ```json
+      "commander:api": "ts-node src/commander/server.ts"
+      ```
+      
+      Do not ask questions - just do it.
+
+  - id: update-tailwind-config
+    description: Update Tailwind to include commander
+    prompt: |
+      In Edge Autopilot, update tailwind.config.js (or create if it doesn't exist):
+      
+      Make sure the content array includes the commander directory:
+      
+      ```javascript
+      /** @type {import('tailwindcss').Config} */
+      module.exports = {
+        content: [
+          "./src/**/*.{js,ts,jsx,tsx}",
+          "./src/commander/**/*.{js,ts,jsx,tsx}",
+        ],
+        theme: {
+          extend: {},
+        },
+        plugins: [],
+      }
+      ```
+      
+      Also ensure postcss.config.js exists:
+      
+      ```javascript
+      module.exports = {
+        plugins: {
+          tailwindcss: {},
+          autoprefixer: {},
+        },
+      }
+      ```
+      
+      Do not ask questions - just do it.
+
+  - id: install-dependencies
+    description: Install required dependencies
+    prompt: |
+      In Edge Autopilot, install the required dependencies for the Commander UI:
+      
+      Run:
+      ```bash
+      npm install react react-dom lucide-react
+      npm install -D @types/react @types/react-dom @vitejs/plugin-react vite tailwindcss postcss autoprefixer
+      ```
+      
+      Then initialize Tailwind if not already done:
+      ```bash
+      npx tailwindcss init -p
+      ```
+      
+      Do not ask questions - just do it.
+
+  - id: verify-build
+    description: Verify Commander builds successfully
+    prompt: |
+      In Edge Autopilot, verify the Commander UI builds:
+      
+      1. Run: npm run commander:build
+      2. Fix any TypeScript or build errors
+      3. Verify the dist/commander directory was created
+      4. Test running: npm run commander
+      5. Document any issues in ./docs/COMMANDER-SETUP.md
+      
+      Do not ask questions - just do it.
+
+  - id: create-readme
+    description: Create Commander documentation
+    prompt: |
+      In Edge Autopilot, create docs/COMMANDER.md:
+      
+      ```markdown
+      # Autopilot Commander
+      
+      A web-based UI for managing Edge Autopilot tasks.
+      
+      ## Quick Start
+      
+      ```bash
+      # Start the Commander UI
+      npm run commander
+      
+      # Open in browser
+      open http://localhost:3848
+      ```
+      
+      ## Features
+      
+      - **Project Selector**: Choose which project to work on
+      - **Natural Language Input**: Describe tasks in plain English
+      - **AI Task Generation**: Automatically creates structured task prompts
+      - **Task Preview/Edit**: Review and modify generated tasks before running
+      - **One-Click Run**: Execute all tasks with autopilot
+      - **Live Logs**: Real-time output streaming
+      - **File Tracking**: See which files were changed
+      - **Auto-Commit**: Optionally commit changes when complete
+      
+      ## Architecture
+      
+      ```
+      src/commander/
+      ├── index.html          # Entry point
+      ├── main.tsx            # React bootstrap
+      ├── App.tsx             # Main application
+      ├── styles.css          # Tailwind styles
+      ├── components/
+      │   ├── ProjectSelector.tsx
+      │   ├── TaskInput.tsx
+      │   ├── TaskList.tsx
+      │   ├── LogPanel.tsx
+      │   ├── StatsPanel.tsx
+      │   └── TemplateButtons.tsx
+      ├── services/
+      │   ├── projectScanner.ts
+      │   ├── taskGenerator.ts
+      │   └── autopilotRunner.ts
+      ├── hooks/
+      │   └── (custom hooks)
+      └── types/
+          └── index.ts
+      ```
+      
+      ## Development
+      
+      ```bash
+      # Run in development mode with hot reload
+      npm run commander
+      
+      # Build for production
+      npm run commander:build
+      
+      # Run API server (for actual autopilot execution)
+      npm run commander:api
+      ```
+      
+      ## API Endpoints
+      
+      | Endpoint | Method | Description |
+      |----------|--------|-------------|
+      | `/api/projects` | GET | List available projects |
+      | `/api/tasks/save` | POST | Save task YAML file |
+      | `/api/autopilot/run` | POST | Start autopilot |
+      | `/api/autopilot/stop` | POST | Stop autopilot |
+      | `/api/autopilot/status` | GET | Get autopilot status |
+      ```
+      
+      Do not ask questions - just do it.
