@@ -1,0 +1,123 @@
+tasks:
+  - id: migrate-remaining-pages
+    status: complete
+    description: Migrate remaining pages with Firebase
+    prompt: |
+      In Edge Oracle at /Users/g/VScode-Programs/Projects/edge-oracle
+
+      Find and migrate all remaining pages still using Firebase:
+
+      1. Run: grep -rl "firebase" src/pages/ --include="*.jsx" --include="*.tsx"
+      2. For each file found, replace Firebase with Supabase
+      3. Convert field names to snake_case
+      4. Update imports
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T03:12:50.967Z
+  - id: migrate-remaining-components
+    status: complete
+    description: Migrate remaining components with Firebase
+    prompt: >
+      In Edge Oracle, find and migrate all components still using Firebase:
+
+
+      1. Run: grep -rl "firebase" src/components/ --include="*.jsx"
+      --include="*.tsx"
+
+      2. For each file, replace Firebase with Supabase
+
+      3. Update imports and field names
+
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T03:17:21.829Z
+  - id: migrate-lib-files
+    status: complete
+    description: Migrate lib files
+    prompt: |
+      In Edge Oracle, check src/lib/ for Firebase usage:
+
+      1. Run: grep -rl "firebase" src/lib/
+      2. Update any files to use Supabase
+      3. Keep backward compatibility where needed
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T03:17:41.571Z
+  - id: migrate-utils
+    status: complete
+    description: Migrate utils with Firebase
+    prompt: |
+      In Edge Oracle, migrate utils still using Firebase:
+
+      1. Run: grep -rl "firebase" src/utils/ --include="*.js" --include="*.ts"
+      2. Replace Firebase imports with Supabase
+      3. Update any helper functions
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T03:46:29.188Z
+  - id: migrate-types
+    status: complete
+    description: Update types for Supabase
+    prompt: |
+      In Edge Oracle, update type files:
+
+      1. Run: grep -rl "firebase" src/types/
+      2. Replace Firebase Timestamp types with Supabase-compatible types
+      3. Ensure all interfaces use snake_case for DB fields
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T03:48:31.271Z
+  - id: cleanup-firebase-imports
+    status: complete
+    description: Remove unused Firebase imports
+    prompt: >
+      In Edge Oracle, clean up unused Firebase imports:
+
+
+      1. Run: grep -rn "from.*firebase" src/ --include="*.js" --include="*.jsx"
+      --include="*.ts" --include="*.tsx"
+
+      2. For each file, check if Firebase is actually used
+
+      3. Remove unused imports
+
+      4. Keep only essential Firebase code (if any)
+
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T03:49:42.944Z
+  - id: update-firebase-config
+    status: complete
+    description: Minimize Firebase config
+    prompt: |
+      In Edge Oracle, minimize Firebase configuration:
+
+      1. Check src/firebase/firebase.js
+      2. Remove any unused Firebase services (Storage is now Supabase)
+      3. Keep only what's strictly necessary
+      4. Add comments explaining what's still needed and why
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T03:50:36.773Z
+  - id: verify-build
+    status: complete
+    description: Verify build and count remaining
+    prompt: >
+      In Edge Oracle, verify the migration:
+
+
+      1. Run: npm run build
+
+      2. Run: grep -r "firebase" src/ --include="*.js" --include="*.jsx"
+      --include="*.ts" --include="*.tsx" | wc -l
+
+      3. List any remaining files with Firebase
+
+      4. Update ./audit/MIGRATION-COMPLETE.md with final status
+
+      5. Create ./audit/FIREBASE-REMAINING.md listing any files that still need
+      Firebase and why
+
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T03:54:08.374Z
