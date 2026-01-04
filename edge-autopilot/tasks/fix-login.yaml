@@ -1,0 +1,161 @@
+tasks:
+  - id: audit-auth-flow
+    status: complete
+    description: Audit current authentication flow
+    prompt: |
+      In Edge Oracle, audit the entire authentication flow:
+
+      1. Review src/pages/Login.jsx - document current login logic
+      2. Review src/components/Auth/ directory - list all auth components
+      3. Check src/lib/supabase/auth.ts or similar auth utilities
+      4. Review ProtectedRoute components (both .jsx and .tsx if they exist)
+      5. Check src/contexts/ for AuthContext or similar
+      6. Document the flow in ./audit/auth-flow.md:
+         - How does login work?
+         - How is session persisted?
+         - How are protected routes handled?
+         - What happens after successful login?
+         - Where does the user land after login?
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T13:45:49.951Z
+  - id: fix-supabase-auth
+    status: complete
+    description: Ensure Supabase auth is properly configured
+    prompt: |
+      In Edge Oracle, verify and fix Supabase authentication:
+
+      1. Check src/lib/supabase/client.ts - ensure proper initialization
+      2. Verify VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are used
+      3. Check for any remaining Firebase auth imports and remove them
+      4. Ensure supabase.auth.signInWithPassword is used for login
+      5. Ensure supabase.auth.signOut is used for logout
+      6. Add proper error handling for auth failures
+      7. Fix any TypeScript errors in auth files
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T13:51:23.940Z
+  - id: fix-auth-context
+    status: complete
+    description: Fix AuthContext and session management
+    prompt: >
+      In Edge Oracle, fix the AuthContext:
+
+
+      1. Find AuthContext (likely in src/contexts/)
+
+      2. Ensure it uses Supabase auth state listener:
+         supabase.auth.onAuthStateChange((event, session) => {...})
+      3. Provide user, session, loading state to consumers
+
+      4. Handle auth state changes properly (SIGNED_IN, SIGNED_OUT,
+      TOKEN_REFRESHED)
+
+      5. Persist session across page refreshes
+
+      6. Remove any Firebase auth listeners
+
+      7. Export login, logout, and getCurrentUser functions
+
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T13:53:28.051Z
+  - id: fix-protected-route
+    status: complete
+    description: Fix ProtectedRoute component
+    prompt: >
+      In Edge Oracle, fix the ProtectedRoute component:
+
+
+      1. Find all ProtectedRoute components (check for duplicates in .jsx and
+      .tsx)
+
+      2. Consolidate into ONE component if duplicates exist
+
+      3. Use AuthContext to check authentication state
+
+      4. Show loading spinner while checking auth
+
+      5. Redirect to /login if not authenticated
+
+      6. Pass through to children if authenticated
+
+      7. Update all imports to use the single ProtectedRoute
+
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T13:56:44.501Z
+  - id: fix-login-page
+    status: complete
+    description: Fix Login page component
+    prompt: |
+      In Edge Oracle, fix the Login page:
+
+      1. Review src/pages/Login.jsx
+      2. Use Supabase signInWithPassword for login
+      3. Add proper form validation
+      4. Show loading state during login attempt
+      5. Display clear error messages for failures
+      6. Redirect to /dashboard (or appropriate page) after successful login
+      7. If user is already logged in, redirect away from login page
+      8. Style consistently with Edge Brand Colors
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T14:00:28.106Z
+  - id: fix-post-login-redirect
+    status: complete
+    description: Fix redirect after login
+    prompt: >
+      In Edge Oracle, fix post-login behavior:
+
+
+      1. After successful login, user should go to /dashboard
+
+      2. Check src/main.jsx or App.jsx for routing logic
+
+      3. Ensure the root route "/" redirects appropriately
+
+      4. If user tries to access protected route while logged out, redirect to
+      login, then back to original route after login
+
+      5. Store intended destination in sessionStorage if needed
+
+      6. Clear any stale redirect data after successful navigation
+
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T14:03:40.532Z
+  - id: fix-logout
+    status: complete
+    description: Fix logout functionality
+    prompt: |
+      In Edge Oracle, fix logout:
+
+      1. Find logout button/functionality (likely in Header or Sidebar)
+      2. Call supabase.auth.signOut() on logout
+      3. Clear any local state (contexts, localStorage, sessionStorage)
+      4. Redirect to /login after logout
+      5. Ensure no protected data persists after logout
+      6. Test that user cannot access protected routes after logout
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T14:07:28.694Z
+  - id: verify-and-test
+    status: complete
+    description: Verify build and document fixes
+    prompt: |
+      In Edge Oracle, verify the login fixes:
+
+      1. Run: npm run build - fix any errors
+      2. Run: npx tsc --noEmit - fix any TypeScript errors
+      3. Search for any remaining Firebase auth imports:
+         grep -r "firebase/auth" src/
+         grep -r "signInWithEmailAndPassword" src/
+      4. Remove any found Firebase auth references
+      5. Update ./audit/auth-flow.md with:
+         - What was fixed
+         - Current login flow (step by step)
+         - Any remaining issues
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T14:09:31.345Z

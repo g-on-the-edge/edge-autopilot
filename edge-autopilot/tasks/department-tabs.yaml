@@ -1,0 +1,122 @@
+tasks:
+  - id: audit-department-tabs
+    status: complete
+    description: Audit current department tab state
+    prompt: |
+      In Edge Oracle at /Users/g/VScode-Programs/Projects/edge-oracle
+
+      Audit src/pages/Departments/ to understand current tab implementation:
+
+      1. Find the main department detail page component
+      2. List all tabs and their current state (working vs placeholder)
+      3. Document what data each tab needs
+      4. Check what Supabase tables exist for this data
+      5. Create ./audit/department-tabs-audit.md with findings
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T05:04:45.603Z
+  - id: build-team-tab
+    status: complete
+    description: Build out Team tab
+    prompt: |
+      In Edge Oracle, build out the Department Team tab:
+
+      1. Find the Team tab component in src/pages/Departments/
+      2. Connect it to Supabase staff/employees data
+      3. Show team members with: name, role, email, photo
+      4. Add org chart or team hierarchy if data exists
+      5. Include headcount stats
+      6. Style with Edge Brand Colors and wow factor
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T05:07:59.816Z
+  - id: build-strategy-tab
+    status: complete
+    description: Build out Strategy tab
+    prompt: |
+      In Edge Oracle, build out the Department Strategy tab:
+
+      1. Find the Strategy tab component
+      2. Connect to Supabase for department goals/OKRs if table exists
+      3. If no table, create a clean UI with:
+         - Mission/Vision section
+         - Strategic priorities
+         - Key metrics/KPIs
+         - Goals and progress
+      4. Use placeholder data that looks realistic for healthcare
+      5. Style professionally with animations
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T05:10:37.499Z
+  - id: build-projects-tab
+    status: complete
+    description: Build out Projects tab
+    prompt: |
+      In Edge Oracle, build out the Department Projects tab:
+
+      1. Find the Projects tab component
+      2. Connect to Supabase projects table filtered by department
+      3. Show project cards with: name, status, progress, owner, dates
+      4. Add status filters (Active, Completed, On Hold)
+      5. Link to project detail pages
+      6. Show project stats summary
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T05:14:57.035Z
+  - id: build-processes-tab
+    status: complete
+    description: Build out Processes tab
+    prompt: |
+      In Edge Oracle, build out the Department Processes/Workflows tab:
+
+      1. Find the processes/workflows tab component
+      2. Connect to Supabase workflows table if exists
+      3. Show process list with: name, type, steps, last updated
+      4. Add visual workflow indicators
+      5. Link to simulator for each workflow
+      6. Include process metrics if available
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T05:20:45.046Z
+  - id: build-resources-tab
+    status: complete
+    description: Build out Resources tab
+    prompt: |
+      In Edge Oracle, build out the Department Resources tab:
+
+      1. Find or create Resources tab component
+      2. Show department resources: equipment, rooms, budget
+      3. Include resource utilization metrics
+      4. Add capacity planning visuals
+      5. Connect to relevant Supabase tables
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T05:25:08.528Z
+  - id: polish-department-ui
+    status: complete
+    description: Polish department detail UI
+    prompt: |
+      In Edge Oracle, polish the department detail page:
+
+      1. Ensure all tabs have consistent styling
+      2. Add smooth tab transitions/animations
+      3. Add loading skeletons for each tab
+      4. Ensure responsive design works
+      5. Add breadcrumb navigation
+      6. Test all tabs render without errors
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T05:32:13.796Z
+  - id: verify-departments
+    status: complete
+    description: Verify department pages work
+    prompt: |
+      In Edge Oracle, verify department pages:
+
+      1. Run: npm run build
+      2. Check for any TypeScript/ESLint errors
+      3. List any remaining placeholder content
+      4. Update ./audit/departments-issues.md with current status
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T05:35:18.880Z

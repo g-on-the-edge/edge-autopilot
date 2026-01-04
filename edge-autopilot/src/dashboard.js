@@ -849,6 +849,12 @@ export class Dashboard extends EventEmitter {
         setTimeout(connect, 2000);
       };
 
+      ws.onerror = (error) => {
+        console.error('WebSocket error:', error);
+        document.getElementById('connection-dot').classList.remove('connected');
+        document.getElementById('connection-text').textContent = 'Connection Error';
+      };
+
       ws.onmessage = (event) => {
         const message = JSON.parse(event.data);
         handleMessage(message);
@@ -1063,6 +1069,11 @@ export class Dashboard extends EventEmitter {
     }
 
     function togglePause() {
+      if (!ws || ws.readyState !== WebSocket.OPEN) {
+        console.warn('WebSocket not connected');
+        return;
+      }
+      
       if (isPaused) {
         ws.send(JSON.stringify({ type: 'resume' }));
       } else {
