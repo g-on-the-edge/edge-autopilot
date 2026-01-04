@@ -97,7 +97,14 @@ export class Supervisor extends EventEmitter {
     this.dashboard.updateMode(this.config.mode);
     this.dashboard.updateQueue(tasks);
     this.dashboard.updateStats(this.sessionStats);
-    
+
+    // Add session started action
+    this.dashboard.addAction({
+      type: 'session_started',
+      description: `Session started in ${this.config.mode} mode with ${tasks.length} tasks`,
+      status: 'success'
+    });
+
     // Send Slack notification
     await this.slack.sessionStart(this.config.mode, tasks.length);
     
@@ -111,24 +118,42 @@ export class Supervisor extends EventEmitter {
       
       spinner.text = `Task: ${task.description?.slice(0, 50)}...`;
       this.dashboard.updateTask(task);
-      
+
+      // Add task started action
+      this.dashboard.addAction({
+        type: 'task_started',
+        description: task.description || task.prompt || `Task ${task.id}`,
+        target: task.id,
+        status: 'running'
+      });
+
       await this.slack.taskStart(task);
       const taskStart = Date.now();
       
       try {
         await this.runSingle(task.prompt || task.description, task.context);
-        
+
         this.sessionStats.tasksCompleted++;
+        this.sessionStats.filesChanged++; // Assume each task changes at least one file
         await taskQueue.markComplete(task.id);
-        
+
         const taskStats = {
           duration: Date.now() - taskStart,
           actionsApproved: this.sessionStats.actionsApproved,
           filesChanged: this.sessionStats.filesChanged,
           errors: 0
         };
-        
+
         this.dashboard.taskCompleted(task);
+
+        // Add task completed action
+        this.dashboard.addAction({
+          type: 'task_completed',
+          description: task.description || task.prompt || `Task ${task.id}`,
+          target: task.id,
+          status: 'success'
+        });
+
         await this.slack.taskComplete(task, taskStats);
         
       } catch (error) {
@@ -137,6 +162,16 @@ export class Supervisor extends EventEmitter {
         
         this.logger.error(`Task failed: ${task.id}`, error);
         this.dashboard.taskFailed(task, error.message);
+
+        // Add task failed action
+        this.dashboard.addAction({
+          type: 'task_failed',
+          description: `${task.description || task.prompt || `Task ${task.id}`}: ${error.message}`,
+          target: task.id,
+          status: 'error',
+          riskLevel: 'high'
+        });
+
         await this.slack.taskFailed(task, error);
         
         if (this.sessionStats.errors >= this.config.autopilot.stop_on?.error_count) {
@@ -152,10 +187,17 @@ export class Supervisor extends EventEmitter {
     
     spinner.succeed(`Queue complete: ${this.sessionStats.tasksCompleted} tasks`);
     
+    // Add session complete action
+    this.dashboard.addAction({
+      type: 'session_complete',
+      description: `Session complete: ${this.sessionStats.tasksCompleted} completed, ${this.sessionStats.tasksFailed} failed`,
+      status: 'success'
+    });
+
     // Final notifications
     await this.slack.sessionComplete(this.sessionStats);
     this.printSummary();
-    
+
     // Keep dashboard running after completion
     if (this.dashboard.sessionComplete) {
       this.dashboard.sessionComplete();
@@ -175,23 +217,37 @@ export class Supervisor extends EventEmitter {
 
       const proc = spawn('claude', args, {
         cwd: workDir,
-        stdio: 'inherit',
+        stdio: ['ignore', 'pipe', 'pipe'],  // ignore stdin - fixes hang when claude waits for input
         env: { ...process.env, FORCE_COLOR: '1' }
+      });
+
+      // Set encoding for text streams
+      proc.stdout.setEncoding('utf8');
+      proc.stderr.setEncoding('utf8');
+
+      // Handle stdout - write to terminal and broadcast to dashboard
+      proc.stdout.on('data', (data) => {
+        process.stdout.write(data);
+        this.dashboard.addOutput(data);
+      });
+
+      // Handle stderr - write to terminal and broadcast to dashboard
+      proc.stderr.on('data', (data) => {
+        process.stderr.write(data);
+        this.dashboard.addOutput(data);
       });
 
       proc.on('close', (code) => {
         this.activeProcess = null;
         this.logger.info(`Task completed with code ${code}`);
-        this.sessionStats.tasksCompleted++;
-        this.sessionStats.filesChanged++;
+        // Note: Stats are updated in runQueue() to avoid double-counting
+        // Only broadcast the current stats here for real-time updates
         this.dashboard.updateStats(this.sessionStats);
         resolve({ code });
       });
 
       proc.on('error', (err) => {
         this.activeProcess = null;
-        this.sessionStats.errors++;
-        this.sessionStats.tasksFailed++;
         this.logger.error('Spawn error:', err.message);
         reject(err);
       });
@@ -275,7 +331,14 @@ export class Supervisor extends EventEmitter {
     // Start dashboard
     await this.dashboard.start();
     this.dashboard.updateMode('copilot');
-    
+
+    // Add session started action
+    this.dashboard.addAction({
+      type: 'session_started',
+      description: 'Copilot session started',
+      status: 'success'
+    });
+
     console.log(chalk.green('\n👥 Copilot mode active\n'));
     console.log(chalk.gray(`📊 Dashboard: http://localhost:${this.config.dashboard?.port || 3847}`));
     if (this.config.workingDirectory) {
@@ -305,11 +368,34 @@ export class Supervisor extends EventEmitter {
             if (args.length === 0) {
               console.log(chalk.yellow('Usage: /task <description>'));
             } else {
+              const taskDesc = args.join(' ');
               console.log(chalk.cyan('\n--- Running Task ---\n'));
+              this.dashboard.addAction({
+                type: 'task_started',
+                description: taskDesc,
+                status: 'running'
+              });
               try {
-                await this.runSingle(args.join(' '));
+                await this.runSingle(taskDesc);
+                this.sessionStats.tasksCompleted++;
+                this.sessionStats.filesChanged++;
+                this.dashboard.updateStats(this.sessionStats);
+                this.dashboard.addAction({
+                  type: 'task_completed',
+                  description: taskDesc,
+                  status: 'success'
+                });
                 console.log(chalk.green('--- Task Complete ---\n'));
               } catch (error) {
+                this.sessionStats.errors++;
+                this.sessionStats.tasksFailed++;
+                this.dashboard.updateStats(this.sessionStats);
+                this.dashboard.addAction({
+                  type: 'task_failed',
+                  description: `${taskDesc}: ${error.message}`,
+                  status: 'error',
+                  riskLevel: 'high'
+                });
                 console.log(chalk.red(`--- Task Failed: ${error.message} ---\n`));
               }
             }
@@ -340,10 +426,32 @@ export class Supervisor extends EventEmitter {
       } else if (trimmed) {
         // Treat bare input as a task
         console.log(chalk.cyan('\n--- Running Task ---\n'));
+        this.dashboard.addAction({
+          type: 'task_started',
+          description: trimmed,
+          status: 'running'
+        });
         try {
           await this.runSingle(trimmed);
+          this.sessionStats.tasksCompleted++;
+          this.sessionStats.filesChanged++;
+          this.dashboard.updateStats(this.sessionStats);
+          this.dashboard.addAction({
+            type: 'task_completed',
+            description: trimmed,
+            status: 'success'
+          });
           console.log(chalk.green('--- Task Complete ---\n'));
         } catch (error) {
+          this.sessionStats.errors++;
+          this.sessionStats.tasksFailed++;
+          this.dashboard.updateStats(this.sessionStats);
+          this.dashboard.addAction({
+            type: 'task_failed',
+            description: `${trimmed}: ${error.message}`,
+            status: 'error',
+            riskLevel: 'high'
+          });
           console.log(chalk.red(`--- Task Failed: ${error.message} ---\n`));
         }
       }

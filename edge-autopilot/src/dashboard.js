@@ -203,6 +203,7 @@ export class Dashboard extends EventEmitter {
    */
   updateStats(stats) {
     this.state.stats = { ...this.state.stats, ...stats };
+    console.log('[Dashboard] Broadcasting stats:', JSON.stringify(this.state.stats));
     this.broadcast('stats', this.state.stats);
   }
 
