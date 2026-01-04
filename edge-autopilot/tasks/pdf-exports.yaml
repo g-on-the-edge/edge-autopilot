@@ -1,0 +1,65 @@
+tasks:
+  - id: audit-pdf-exports
+    status: complete
+    description: Audit current PDF export state
+    prompt: |
+      In Edge Oracle, audit the PDF export functionality:
+
+      1. Find ExecutiveSummary.jsx - check for TODO comments about PDF export
+      2. Find PTCompareIdeas.jsx - check for TODO comments about PDF export
+      3. Check what PDF libraries are available (jspdf, pdfmake, etc.)
+      4. Review existing PDF generation code in src/ if any
+      5. Create ./audit/pdf-exports-audit.md with findings
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T15:52:13.198Z
+  - id: implement-executive-summary-pdf
+    status: complete
+    description: Implement ExecutiveSummary PDF export
+    prompt: |
+      In Edge Oracle, implement PDF export for ExecutiveSummary:
+
+      1. Find src/pages/HPOM/Analytics/ExecutiveSummary.jsx
+      2. Find the TODO for PDF export
+      3. Implement PDF generation using jspdf or existing PDF utilities
+      4. Include:
+         - Header with title and date
+         - Key metrics summary
+         - Charts/visualizations as images
+         - Formatted tables
+      5. Add export button with loading state
+      6. Style professionally with Edge branding
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T15:56:15.900Z
+  - id: implement-pt-compare-pdf
+    status: complete
+    description: Implement PTCompareIdeas PDF export
+    prompt: |
+      In Edge Oracle, implement PDF export for PTCompareIdeas:
+
+      1. Find src/pages/HPOM/Ellevate/PTCompareIdeas.jsx
+      2. Find the TODO for PDF export
+      3. Implement PDF generation
+      4. Include:
+         - Comparison header
+         - Side-by-side idea comparison
+         - Scores and metrics
+         - Recommendation summary
+      5. Add export button with loading state
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T16:00:10.768Z
+  - id: verify-pdf-exports
+    status: complete
+    description: Verify PDF exports work
+    prompt: |
+      In Edge Oracle, verify PDF exports:
+
+      1. Run: npm run build - fix any errors
+      2. Check that jspdf is imported correctly
+      3. Verify export functions are properly typed
+      4. Update ./audit/pdf-exports-audit.md with completion status
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T16:01:36.593Z

@@ -1,0 +1,100 @@
+tasks:
+  - id: audit-firestore-usage
+    status: complete
+    description: Audit all files still using Firestore
+    prompt: >
+      In Edge Oracle, create a comprehensive audit of Firestore usage:
+
+
+      1. Find all files importing from firebase:
+         grep -rn "from.*firebase" src/ --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx"
+      2. Find all files importing db from firebase.js:
+         grep -rn "import.*db.*from" src/
+      3. Categorize by feature area (HPOM, Operations, etc.)
+
+      4. List what Firestore collections each file uses
+
+      5. Check if equivalent Supabase tables exist
+
+      6. Create ./audit/firestore-migration-plan.md with:
+         - Full file list grouped by feature
+         - Collections used
+         - Migration complexity (easy/medium/hard)
+         - Suggested migration order
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T16:39:58.517Z
+  - id: migrate-simple-services
+    status: complete
+    description: Migrate simple read-only services first
+    prompt: >
+      In Edge Oracle, migrate the simplest Firestore services:
+
+
+      1. Review ./audit/firestore-migration-plan.md
+
+      2. Start with files that only do simple reads (no complex queries, no
+      realtime)
+
+      3. For each simple service:
+         - Create Supabase equivalent query
+         - Update imports from firebase to supabase
+         - Remove Firestore imports
+         - Test that it still works (npm run build)
+      4. Update the audit file with progress
+
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T16:41:58.057Z
+  - id: migrate-hpom-services
+    status: complete
+    description: Migrate HPOM-related Firestore services
+    prompt: |
+      In Edge Oracle, migrate HPOM services to Supabase:
+
+      1. Find all HPOM files still using Firestore
+      2. Check what collections they use (hpom_*, teams, metrics, etc.)
+      3. Verify Supabase tables exist for each collection
+      4. Migrate each service:
+         - Replace Firestore queries with Supabase
+         - Update onSnapshot listeners to Supabase realtime
+         - Handle any data structure differences
+      5. Run npm run build after each migration
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T16:53:33.832Z
+  - id: migrate-operations-services
+    status: complete
+    description: Migrate Operations-related Firestore services
+    prompt: |
+      In Edge Oracle, migrate Operations services to Supabase:
+
+      1. Find files in src/pages/Operations/ or src/services/ using Firestore
+      2. Migrate workflow, SOP, procedure services if not already done
+      3. Update any dashboard components using Firestore
+      4. Replace Firestore listeners with Supabase realtime
+      5. Run npm run build after changes
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T16:58:48.555Z
+  - id: verify-phase1
+    status: complete
+    description: Verify Phase 1 migrations
+    prompt: >
+      In Edge Oracle, verify Phase 1 Firestore migrations:
+
+
+      1. Run: npm run build - fix any errors
+
+      2. Count remaining Firestore imports:
+         grep -rn "from.*firebase" src/ --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" | wc -l
+      3. List files still using Firestore
+
+      4. Update ./audit/firestore-migration-plan.md with:
+         - Files migrated
+         - Files remaining
+         - Issues encountered
+         - Phase 2 plan
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T17:00:44.419Z

@@ -1,0 +1,87 @@
+tasks:
+  - id: audit-executive-rounds
+    status: complete
+    description: Audit current Executive Rounds implementation
+    prompt: |
+      In Edge Oracle, audit the Executive Rounds feature:
+
+      1. Find all Executive Rounds related files:
+         - src/pages/HPOM/ExecutiveRounds/
+         - src/services/*executiveRounds*
+         - src/hooks/*rounds*
+      2. List ALL Firebase/Firestore imports and queries
+      3. Document what data it uses (rounds, routes, stops, action items, etc.)
+      4. Check what Supabase tables already exist for this data
+      5. Create ./audit/executive-rounds-audit.md with findings
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T15:16:30.854Z
+  - id: migrate-rounds-service
+    status: complete
+    description: Migrate Executive Rounds service to Supabase
+    prompt: >
+      In Edge Oracle, migrate the Executive Rounds service:
+
+
+      1. Find the main service file (likely executiveRoundsService.ts or
+      similar)
+
+      2. If a Supabase version exists, ensure it's complete
+
+      3. If not, create src/services/executiveRoundsServiceSupabase.ts
+
+      4. Migrate all CRUD operations:
+         - Rounds (create, read, update, delete, list)
+         - Routes and stops
+         - Action items
+         - Round participants/attendees
+      5. Use proper TypeScript types
+
+      6. Remove Firebase imports from original service
+
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T15:21:45.075Z
+  - id: migrate-rounds-pages
+    status: complete
+    description: Migrate Executive Rounds pages
+    prompt: |
+      In Edge Oracle, migrate Executive Rounds pages to Supabase:
+
+      1. Review all files in src/pages/HPOM/ExecutiveRounds/
+      2. Replace Firebase imports with Supabase
+      3. Update hooks to use Supabase auth context
+      4. Ensure useSupabaseAuth() is used for user context
+      5. Update any Firestore listeners to Supabase realtime
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T15:28:36.659Z
+  - id: migrate-rounds-components
+    status: complete
+    description: Migrate Executive Rounds components
+    prompt: |
+      In Edge Oracle, check for any remaining Firebase in rounds components:
+
+      1. Search src/components/ for executive rounds related files
+      2. Search for Firebase imports in any rounds-related components
+      3. Replace with Supabase equivalents
+      4. Update context usage to SupabaseAuthContext
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T15:31:09.726Z
+  - id: verify-rounds-migration
+    status: complete
+    description: Verify Executive Rounds migration
+    prompt: |
+      In Edge Oracle, verify the Executive Rounds migration:
+
+      1. Run: npm run build - fix any errors
+      2. Search for remaining Firebase in rounds files:
+         grep -rn "firebase" src/pages/HPOM/ExecutiveRounds/
+         grep -rn "firebase" src/services/*ounds*
+      3. Remove any found Firebase references
+      4. Update ./audit/executive-rounds-audit.md with completion status
+      5. List any issues that need manual testing
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T15:33:33.254Z

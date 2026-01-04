@@ -1,0 +1,90 @@
+tasks:
+  - id: find-firebase-files
+    status: complete
+    description: Find all remaining Firebase-related files
+    prompt: >
+      In Edge Oracle, find all Firebase-related files that can be deleted:
+
+
+      1. Search for files with "firebase" in the name
+
+      2. Search for deprecated service files that re-export Supabase versions
+
+      3. Check these specific files:
+         - src/services/executiveRoundsService.ts (should be deprecated wrapper)
+         - src/services/executiveRoundsInvitationService.ts (should be deprecated wrapper)
+         - src/context/AuthContext.tsx (if it's just a wrapper)
+      4. Search for any Firebase config files
+
+      5. Create ./audit/firebase-cleanup.md listing files safe to delete vs
+      files to keep
+
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T16:19:00.422Z
+  - id: delete-deprecated-services
+    status: complete
+    description: Delete deprecated Firebase service wrappers
+    prompt: >
+      In Edge Oracle, delete deprecated Firebase service files:
+
+
+      1. Check if executiveRoundsService.ts is just a re-export of Supabase
+      version
+         - If yes, find all imports and update them to import from executiveRoundsServiceSupabase.ts directly
+         - Then delete executiveRoundsService.ts
+      2. Check if executiveRoundsInvitationService.ts is just a re-export
+         - If yes, update imports and delete it
+      3. Update any other files importing from the old services
+
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T16:20:09.319Z
+  - id: clean-firebase-config
+    status: complete
+    description: Remove Firebase config if unused
+    prompt: |
+      In Edge Oracle, check Firebase configuration:
+
+      1. Find src/lib/firebase/ or similar config directory
+      2. Search for any files still importing from Firebase config
+      3. If nothing imports Firebase config, delete the config files
+      4. If some files still need Firebase (e.g., Cloud Functions), document why
+      5. Remove firebase from package.json dependencies if completely unused
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T16:23:07.860Z
+  - id: clean-auth-context
+    status: complete
+    description: Clean up deprecated AuthContext
+    prompt: |
+      In Edge Oracle, clean up AuthContext:
+
+      1. Check src/context/AuthContext.tsx
+      2. If it's just a wrapper around SupabaseAuthContext, find all imports
+      3. Update imports to use SupabaseAuthContext directly
+      4. Delete AuthContext.tsx if no longer needed
+      5. Or keep it as a simple re-export if many files depend on it
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T16:31:07.220Z
+  - id: verify-cleanup
+    status: complete
+    description: Verify cleanup and build
+    prompt: >
+      In Edge Oracle, verify the Firebase cleanup:
+
+
+      1. Run: npm run build - fix any errors
+
+      2. Search for remaining Firebase imports:
+         grep -rn "from.*firebase" src/ --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" | head -20
+      3. Count total Firebase references:
+         grep -rn "firebase" src/ --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" | wc -l
+      4. Update ./audit/firebase-cleanup.md with final status
+
+      5. List any Firebase code that must remain and why
+
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T16:34:40.838Z

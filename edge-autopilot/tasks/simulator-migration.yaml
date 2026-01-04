@@ -1,19 +1,27 @@
-name: Migrate Simulator to Supabase
 tasks:
   - id: audit-simulator
+    status: complete
     description: Audit current Simulator implementation
-    prompt: |
+    prompt: >
       In Edge Oracle, audit the Simulator page:
 
+
       1. Review src/pages/Simulator.jsx thoroughly
+
       2. List ALL Firebase/Firestore imports and queries
-      3. Document what data it fetches (workflows, SOPs, procedures, resource_pools)
+
+      3. Document what data it fetches (workflows, SOPs, procedures,
+      resource_pools)
+
       4. Check what Supabase tables exist for this data
+
       5. Create ./audit/simulator-audit.md with findings
 
-      Do not ask questions - just do it.
 
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T14:49:37.653Z
   - id: create-simulator-service
+    status: complete
     description: Create Supabase simulator service
     prompt: |
       In Edge Oracle, create a Supabase service for the Simulator:
@@ -29,8 +37,9 @@ tasks:
       5. Filter by organization_id from user context
 
       Do not ask questions - just do it.
-
+    completedAt: 2026-01-04T14:51:05.828Z
   - id: migrate-simulator-queries
+    status: complete
     description: Replace Firebase queries with Supabase
     prompt: |
       In Edge Oracle, migrate Simulator.jsx to Supabase:
@@ -43,8 +52,9 @@ tasks:
       6. Update state management to work with new data format
 
       Do not ask questions - just do it.
-
+    completedAt: 2026-01-04T14:55:57.889Z
   - id: add-loading-states
+    status: complete
     description: Add proper loading and error states
     prompt: |
       In Edge Oracle, improve Simulator UX:
@@ -56,8 +66,9 @@ tasks:
       5. Ensure graceful degradation
 
       Do not ask questions - just do it.
-
+    completedAt: 2026-01-04T15:01:26.221Z
   - id: verify-simulator
+    status: complete
     description: Verify Simulator works
     prompt: |
       In Edge Oracle, verify the Simulator migration:
@@ -71,3 +82,4 @@ tasks:
       5. List any issues that need manual testing
 
       Do not ask questions - just do it.
+    completedAt: 2026-01-04T15:02:17.524Z
