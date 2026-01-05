@@ -171,14 +171,15 @@ program
     console.log(chalk.cyan(banner));
 
     const config = await loadConfig(options.config);
-    const workDir = options.dir || config.workingDirectory || process.cwd();
+    const effectiveWorkDir = options.dir || config.workingDirectory || process.cwd();
     const provider = config.provider || 'claude';
     const providerInfo = getProviderInfo(provider, config.model);
 
     console.log(chalk.bold('Edge Autopilot Status'));
     console.log(chalk.gray('Node:'), process.version);
     console.log(chalk.gray('Config file:'), options.config);
-    console.log(chalk.gray('Working directory:'), workDir);
+    console.log(chalk.gray('Config workingDirectory:'), config.workingDirectory || '(not set)');
+    console.log(chalk.gray('Effective workingDirectory:'), effectiveWorkDir);
     console.log(chalk.gray('Dashboard enabled:'), Boolean(config.dashboard));
     console.log(chalk.gray('Mode:'), config.mode || '(not set)');
     console.log(chalk.gray('Provider:'), providerInfo.provider);
