@@ -1,10 +1,30 @@
 # Example Task Queue for Edge Oracle
 # Add your tasks here and run: npm run autopilot
+#
+# PROVIDER SELECTION:
+# Default provider is set in config.yaml or via CLI --provider flag
+# Options: claude | openai
+#
+# MODEL SELECTION:
+# Each task can specify a model: opus | sonnet | haiku (works for both providers)
+#
+# Claude models:
+# - opus: Most capable, highest cost - use for complex tasks
+# - sonnet: Good balance of cost/capability - recommended default
+# - haiku: Fastest/cheapest - use for simple tasks
+#
+# OpenAI models:
+# - gpt-4o, gpt-4-turbo, gpt-4: High capability
+# - gpt-3.5-turbo: Faster/cheaper
+# - o1, o1-mini: Reasoning models
+#
+# If not specified, uses config.yaml default or CLI --model flag
 
 tasks:
-  # High priority - do these first
+  # High priority - do these first (use opus for complex analysis)
   - id: buyer-helper-enhancement
     priority: high
+    model: opus  # Complex task - use most capable model
     description: Enhance Buyer Helper PDF parsing
     prompt: |
       Look at the Buyer Helper app and improve the PDF parsing logic.
@@ -19,6 +39,7 @@ tasks:
 
   - id: dark-mode-fixes
     priority: high
+    model: sonnet  # Medium complexity
     description: Fix dark mode color issues
     prompt: |
       Review all components for dark mode compatibility.
@@ -28,9 +49,10 @@ tasks:
       Reference the brand guidelines for correct color usage.
       Test both light and dark modes.
 
-  # Normal priority
+  # Normal priority (use sonnet for balanced tasks)
   - id: component-documentation
     priority: normal
+    model: haiku  # Simple task - use fastest/cheapest model
     description: Add JSDoc comments to components
     prompt: |
       Add comprehensive JSDoc documentation to all React components
@@ -44,6 +66,7 @@ tasks:
 
   - id: test-coverage
     priority: normal
+    model: sonnet  # Medium complexity
     description: Improve test coverage
     prompt: |
       Review the current test coverage and add tests for:
@@ -57,6 +80,7 @@ tasks:
   # Low priority - nice to have
   - id: performance-audit
     priority: low
+    model: opus  # Complex analysis - use most capable
     description: Performance optimization pass
     prompt: |
       Analyze the application for performance issues:

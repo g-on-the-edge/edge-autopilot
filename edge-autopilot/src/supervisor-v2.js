@@ -9,6 +9,7 @@ import { Logger } from './logger.js';
 import { SmartDetector } from './smart-detector.js';
 import { SlackNotifier } from './slack.js';
 import { Dashboard } from './dashboard.js';
+import { createProvider, resolveModel, getProviderInfo } from './providers/index.js';
 
 /**
  * SupervisorV2 - Enhanced supervisor with Slack, Smart Detection, and Dashboard
@@ -138,7 +139,9 @@ export class Supervisor extends EventEmitter {
       const taskStart = Date.now();
       
       try {
-        await this.runSingle(task.prompt || task.description, task.context);
+        // Model priority: task-level > config-level > default
+        const taskModel = task.model || this.config.model;
+        await this.runSingle(task.prompt || task.description, task.context, taskModel);
 
         this.sessionStats.tasksCompleted++;
         this.sessionStats.filesChanged++; // Assume each task changes at least one file
@@ -210,55 +213,42 @@ export class Supervisor extends EventEmitter {
   }
 
  /**
-   * Run a single prompt through Claude Code
+   * Run a single prompt through the configured AI provider
+   * @param {string} prompt - The task prompt
+   * @param {string} context - Optional task context
+   * @param {string} model - Optional model override (opus, sonnet, haiku, or provider-specific)
    */
-  async runSingle(prompt, context = '') {
+  async runSingle(prompt, context = '', model = null) {
     const fullPrompt = this.buildPrompt(prompt, context);
-    this.logger.info(`Running: ${prompt.slice(0, 100)}...`);
+    const providerName = this.config.provider || 'claude';
+    const effectiveModel = model || this.config.model;
+    const resolvedModel = resolveModel(providerName, effectiveModel);
+    const providerInfo = getProviderInfo(providerName, effectiveModel);
 
-    return new Promise((resolve, reject) => {
-      const args = ['-p', '--dangerously-skip-permissions', fullPrompt];
-      const workDir = this.config.workingDirectory || process.cwd();
+    this.logger.info(`Running [${providerInfo.provider}/${providerInfo.model}]: ${prompt.slice(0, 100)}...`);
 
-      const proc = spawn('claude', args, {
-        cwd: workDir,
-        stdio: ['ignore', 'pipe', 'pipe'],  // ignore stdin - fixes hang when claude waits for input
-        env: { ...process.env, FORCE_COLOR: '1' }
+    const workDir = this.config.workingDirectory || process.cwd();
+    const provider = createProvider(providerName, this.config);
+
+    try {
+      const result = await provider.runTask(fullPrompt, {
+        model: resolvedModel,
+        workDir,
+        onOutput: (data) => {
+          this.dashboard?.addOutput(data);
+        },
+        onError: (data) => {
+          this.dashboard?.addOutput(data);
+        }
       });
 
-      // Set encoding for text streams
-      proc.stdout.setEncoding('utf8');
-      proc.stderr.setEncoding('utf8');
-
-      // Handle stdout - write to terminal and broadcast to dashboard
-      proc.stdout.on('data', (data) => {
-        process.stdout.write(data);
-        this.dashboard?.addOutput(data);
-      });
-
-      // Handle stderr - write to terminal and broadcast to dashboard
-      proc.stderr.on('data', (data) => {
-        process.stderr.write(data);
-        this.dashboard?.addOutput(data);
-      });
-
-      proc.on('close', (code) => {
-        this.activeProcess = null;
-        this.logger.info(`Task completed with code ${code}`);
-        // Note: Stats are updated in runQueue() to avoid double-counting
-        // Only broadcast the current stats here for real-time updates
-        this.dashboard?.updateStats(this.sessionStats);
-        resolve({ code });
-      });
-
-      proc.on('error', (err) => {
-        this.activeProcess = null;
-        this.logger.error('Spawn error:', err.message);
-        reject(err);
-      });
-
-      this.activeProcess = proc;
-    });
+      this.logger.info(`Task completed with code ${result.code}`);
+      this.dashboard?.updateStats(this.sessionStats);
+      return result;
+    } catch (err) {
+      this.logger.error('Provider error:', err.message);
+      throw err;
+    }
   }
   
   /**

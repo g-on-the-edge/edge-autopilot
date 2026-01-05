@@ -1,0 +1,11 @@
+.DS_Store
+
+# Secrets
+edge-autopilot/.env
+
+# Noisy runtime artifacts
+edge-autopilot/logs/*.log
+edge-autopilot/temp/
+
+# Local/generated task runs
+edge-autopilot/tasks/edge-oracle-*.yaml

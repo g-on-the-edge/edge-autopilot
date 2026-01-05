@@ -4,6 +4,31 @@
 # === MODES ===
 mode: copilot  # autopilot | copilot
 
+# === AI PROVIDER ===
+# Which AI provider to use (can be overridden via CLI --provider flag)
+# Options: claude, openai
+# - claude: Uses Claude Code CLI (requires ANTHROPIC_API_KEY)
+# - openai: Uses OpenAI API directly (requires OPENAI_API_KEY)
+provider: claude
+
+# === AI MODEL ===
+# Which model to use (can be overridden per-task or via CLI --model flag)
+#
+# Claude models: opus, sonnet, haiku
+#   Cost: opus > sonnet > haiku
+#   Capability: opus > sonnet > haiku
+#   Speed: haiku > sonnet > opus
+#
+# OpenAI models: gpt-4o, gpt-4-turbo, gpt-4, gpt-3.5-turbo, o1, o1-mini
+#   Cost: o1 > gpt-4o > gpt-4-turbo > gpt-4 > o1-mini > gpt-3.5-turbo
+#   Capability: o1 > gpt-4o > gpt-4-turbo > gpt-4 > o1-mini > gpt-3.5-turbo
+#
+# Cross-provider aliases: opus, sonnet, haiku work for both providers
+#   opus = claude-opus / gpt-4o
+#   sonnet = claude-sonnet / gpt-4-turbo
+#   haiku = claude-haiku / gpt-3.5-turbo
+model: sonnet  # Recommended default for cost/capability balance
+
 # === WORKING DIRECTORY ===
 # Set this to your project path (e.g., Edge Oracle)
 # Leave empty to use current directory
