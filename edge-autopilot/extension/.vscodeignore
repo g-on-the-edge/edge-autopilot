@@ -1,0 +1,14 @@
+# Exclude everything by default
+**
+
+# Include only what the extension needs at runtime
+!extension.js
+!package.json
+!LICENSE
+
+# Always exclude generated/packaging artifacts
+node_modules/**
+package-lock.json
+*.vsix
+.vscode/**
+.DS_Store
