@@ -27,6 +27,7 @@ program
   .description('Run in autonomous mode')
   .option('-t, --tasks <file>', 'Task file', './tasks/example-queue.yaml')
   .option('-c, --config <file>', 'Config file', './config.yaml')
+  .option('-d, --dir <path>', 'Working directory (target project)')
   .option('-p, --provider <provider>', 'AI provider (claude, openai)', '')
   .option('-m, --model <model>', 'AI model (opus/sonnet/haiku for Claude, gpt-4o/gpt-4-turbo/gpt-3.5-turbo for OpenAI)', '')
   .option('--no-dashboard', 'Disable the web dashboard')
@@ -37,6 +38,10 @@ program
     const config = await loadConfig(options.config);
     config.mode = 'autopilot';
     config.dashboard = options.dashboard !== false;
+
+    if (options.dir) {
+      config.workingDirectory = options.dir;
+    }
 
     // Provider priority: CLI flag > config file > default (claude)
     if (options.provider) {
@@ -65,6 +70,7 @@ program
   .command('copilot')
   .description('Run in assisted mode')
   .option('-c, --config <file>', 'Config file', './config.yaml')
+  .option('-d, --dir <path>', 'Working directory (target project)')
   .option('-p, --provider <provider>', 'AI provider (claude, openai)', '')
   .option('-m, --model <model>', 'AI model', '')
   .action(async (options) => {
@@ -73,6 +79,10 @@ program
 
     const config = await loadConfig(options.config);
     config.mode = 'copilot';
+
+    if (options.dir) {
+      config.workingDirectory = options.dir;
+    }
 
     if (options.provider) {
       config.provider = options.provider;
@@ -156,11 +166,12 @@ program
   .command('status')
   .description('Show configuration and environment info')
   .option('-c, --config <file>', 'Config file', './config.yaml')
+  .option('-d, --dir <path>', 'Working directory (target project)')
   .action(async (options) => {
     console.log(chalk.cyan(banner));
 
     const config = await loadConfig(options.config);
-    const workDir = config.workingDirectory || process.cwd();
+    const workDir = options.dir || config.workingDirectory || process.cwd();
     const provider = config.provider || 'claude';
     const providerInfo = getProviderInfo(provider, config.model);
 
