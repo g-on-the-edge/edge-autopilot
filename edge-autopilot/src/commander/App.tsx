@@ -133,6 +133,27 @@ export function App() {
           {/* Left Panel */}
           <div className="col-span-3 space-y-4 overflow-y-auto">
             <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-4">
+              <h2 className="text-sm font-semibold text-white">How to use this (3 steps)</h2>
+              <ol className="mt-3 space-y-2 text-sm">
+                <li className={`flex gap-2 ${!project ? 'text-teal-300' : 'text-slate-300'}`}>
+                  <span className="text-slate-500">1.</span>
+                  <span>Pick a project on the left</span>
+                </li>
+                <li className={`flex gap-2 ${project && tasks.length === 0 ? 'text-teal-300' : 'text-slate-300'}`}>
+                  <span className="text-slate-500">2.</span>
+                  <span>Add tasks (use Templates or type a task)</span>
+                </li>
+                <li className={`flex gap-2 ${project && tasks.length > 0 && !isRunning ? 'text-teal-300' : 'text-slate-300'}`}>
+                  <span className="text-slate-500">3.</span>
+                  <span>Press “Run All”</span>
+                </li>
+              </ol>
+              <p className="mt-3 text-xs text-slate-500">
+                Tip: Watch “Logs” while it runs; check “Results” after.
+              </p>
+            </div>
+
+            <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-4">
               <ProjectSelector
                 selectedProject={project}
                 onSelectProject={setProject}

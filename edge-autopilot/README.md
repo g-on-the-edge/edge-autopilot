@@ -25,6 +25,10 @@ Edge Autopilot is a supervisor layer that sits on top of Claude Code, allowing y
 # Install dependencies
 npm install
 
+# Open the Command Center (easy mode)
+npm run command-center
+# UI opens at http://localhost:3848
+
 # Set up Slack (optional)
 export SLACK_WEBHOOK_URL="https://hooks.slack.com/services/..."
 
@@ -38,6 +42,17 @@ npm run autopilot -- --tasks ./tasks/my-queue.yaml
 # Single task with auto-accept
 npm run autopilot -- run "Add dark mode support to the dashboard"
 ```
+
+## Command Center (easy mode)
+
+If you want the “dummy-proof” UI:
+
+- Run `npm run command-center` (starts the UI + local API)
+- In the UI: 1) pick a project 2) add tasks 3) press “Run All”
+
+If you’re using the VS Code extension, you can also click the status bar button:
+
+- “Command Center” button (bottom-right) → starts it + opens the UI
 
 ## Dashboard
 

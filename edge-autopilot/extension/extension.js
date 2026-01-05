@@ -1,11 +1,13 @@
 const vscode = require('vscode');
 const { spawn } = require('child_process');
 const path = require('path');
+const fs = require('fs');
 
 let statusBarItem;
 let outputChannel;
 let activeSession = null;
 let isPaused = false;
+let commandCenterProcess = null;
 
 /**
  * Activate the extension
@@ -21,13 +23,14 @@ function activate(context) {
         vscode.StatusBarAlignment.Right,
         100
     );
-    statusBarItem.text = '$(robot) Autopilot';
-    statusBarItem.tooltip = 'Edge Autopilot - Click to toggle';
-    statusBarItem.command = 'edgeAutopilot.toggleMode';
+    statusBarItem.text = '$(rocket) Command Center';
+    statusBarItem.tooltip = 'Edge Autopilot - Open Command Center';
+    statusBarItem.command = 'edgeAutopilot.openCommandCenter';
     statusBarItem.show();
     
     // Register commands
     const commands = [
+        vscode.commands.registerCommand('edgeAutopilot.openCommandCenter', openCommandCenter),
         vscode.commands.registerCommand('edgeAutopilot.startCopilot', startCopilot),
         vscode.commands.registerCommand('edgeAutopilot.startAutopilot', startAutopilot),
         vscode.commands.registerCommand('edgeAutopilot.addTask', addTask),
@@ -49,6 +52,65 @@ function activate(context) {
         vscode.window.showInformationMessage('Autopilot config updated');
     });
     context.subscriptions.push(configWatcher);
+}
+
+function findRepoRoot() {
+    const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+    if (!workspaceRoot) return null;
+
+    const direct = path.join(workspaceRoot, 'package.json');
+    if (fs.existsSync(direct)) return workspaceRoot;
+
+    const nested = path.join(workspaceRoot, 'edge-autopilot', 'package.json');
+    if (fs.existsSync(nested)) return path.join(workspaceRoot, 'edge-autopilot');
+
+    return workspaceRoot;
+}
+
+async function openCommandCenter() {
+    const repoRoot = findRepoRoot();
+    if (!repoRoot) {
+        vscode.window.showErrorMessage('Open a folder first (workspace required).');
+        return;
+    }
+
+    outputChannel.appendLine('\n' + '='.repeat(60));
+    outputChannel.appendLine('[Command Center] Launch requested');
+    outputChannel.appendLine(`Repo: ${repoRoot}`);
+    outputChannel.appendLine('='.repeat(60));
+    outputChannel.show(true);
+
+    if (!commandCenterProcess) {
+        const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+        commandCenterProcess = spawn(npmCmd, ['run', 'command-center'], {
+            cwd: repoRoot,
+            shell: process.platform === 'win32',
+        });
+
+        commandCenterProcess.stdout?.on('data', (d) => outputChannel.append(d.toString()));
+        commandCenterProcess.stderr?.on('data', (d) => outputChannel.append(d.toString()));
+
+        commandCenterProcess.on('close', (code) => {
+            outputChannel.appendLine(`\n[Command Center] stopped (code ${code})`);
+            commandCenterProcess = null;
+        });
+    } else {
+        outputChannel.appendLine('[Command Center] already running; opening UI...');
+    }
+
+    // Give the servers a moment to boot, then open the UI.
+    setTimeout(() => {
+        vscode.env.openExternal(vscode.Uri.parse('http://localhost:3848'));
+    }, 600);
+
+    vscode.window.showInformationMessage(
+        'Command Center opened. Do this: 1) Pick a project 2) Add tasks (templates or type) 3) Press Run All.',
+        'Open UI'
+    ).then((choice) => {
+        if (choice === 'Open UI') {
+            vscode.env.openExternal(vscode.Uri.parse('http://localhost:3848'));
+        }
+    });
 }
 
 /**

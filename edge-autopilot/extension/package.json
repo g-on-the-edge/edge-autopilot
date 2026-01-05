@@ -4,16 +4,30 @@
   "description": "AI Agent Supervisor - Orchestrate Claude Code sessions from VSCode",
   "version": "1.0.0",
   "publisher": "emplify-health",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/g-on-the-edge/edge-autopilot.git"
+  },
   "engines": {
     "vscode": "^1.85.0"
   },
   "categories": ["Other", "Machine Learning"],
   "activationEvents": [
-    "onStartupFinished"
+    "onStartupFinished",
+    "onCommand:edgeAutopilot.openCommandCenter",
+    "onCommand:edgeAutopilot.startCopilot",
+    "onCommand:edgeAutopilot.startAutopilot",
+    "onCommand:edgeAutopilot.runTask",
+    "onCommand:edgeAutopilot.viewLogs"
   ],
-  "main": "./extension/extension.js",
+  "main": "./extension.js",
   "contributes": {
     "commands": [
+      {
+        "command": "edgeAutopilot.openCommandCenter",
+        "title": "Open Command Center",
+        "category": "Edge Autopilot"
+      },
       {
         "command": "edgeAutopilot.startCopilot",
         "title": "Start Copilot Mode",
@@ -50,31 +64,6 @@
         "category": "Edge Autopilot"
       }
     ],
-    "viewsContainers": {
-      "activitybar": [
-        {
-          "id": "edge-autopilot",
-          "title": "Edge Autopilot",
-          "icon": "resources/autopilot.svg"
-        }
-      ]
-    },
-    "views": {
-      "edge-autopilot": [
-        {
-          "id": "autopilotStatus",
-          "name": "Status"
-        },
-        {
-          "id": "autopilotTasks",
-          "name": "Task Queue"
-        },
-        {
-          "id": "autopilotLogs",
-          "name": "Recent Actions"
-        }
-      ]
-    },
     "configuration": {
       "title": "Edge Autopilot",
       "properties": {
@@ -129,13 +118,11 @@
     }
   },
   "scripts": {
-    "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./"
+    "package": "vsce package"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
     "@types/vscode": "^1.85.0",
-    "typescript": "^5.0.0"
+    "@vscode/vsce": "^3.6.0"
   }
 }
