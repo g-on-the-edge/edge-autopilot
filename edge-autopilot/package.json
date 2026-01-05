@@ -13,7 +13,9 @@
     "copilot": "node src/cli.js copilot",
     "status": "node src/cli.js status",
     "dev": "node --watch src/index.js",
-    "commander": "vite --config commander.vite.config.ts"
+    "commander": "vite --config commander.vite.config.ts",
+    "commander:server": "node src/commander/server.js",
+    "commander:dev": "node src/commander/server.js & vite --config commander.vite.config.ts"
   },
   "dependencies": {
     "boxen": "^7.1.1",

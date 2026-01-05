@@ -22,16 +22,19 @@ export class Supervisor extends EventEmitter {
   constructor(config) {
     super();
     this.config = config;
-    
+
     // Core modules
     this.logger = new Logger(config.logging);
     this.detector = new SmartDetector();
     this.slack = new SlackNotifier(config.notifications?.slack);
-    this.dashboard = new Dashboard({
-      port: config.dashboard?.port || 3847,
+
+    // Dashboard is optional (can be disabled via --no-dashboard flag)
+    this.dashboardEnabled = config.dashboard !== false;
+    this.dashboard = this.dashboardEnabled ? new Dashboard({
+      port: config.dashboardPort || 3847,
       logsDir: config.logging?.directory || './logs'
-    });
-    
+    }) : null;
+
     // Session state
     this.activeProcess = null;
     this.isPaused = false;
@@ -44,19 +47,21 @@ export class Supervisor extends EventEmitter {
       errors: 0,
       filesChanged: 0
     };
-    
+
     // Pending approvals
     this.pendingApprovals = new Map();
-    
+
     // Set up dashboard event handlers
-    this.setupDashboardEvents();
+    if (this.dashboard) {
+      this.setupDashboardEvents();
+    }
   }
 
   /**
    * Set up event handlers for dashboard interactions
    */
   setupDashboardEvents() {
-    this.dashboard.on('approve', (actionId) => {
+    this.dashboard?.on('approve', (actionId) => {
       const pending = this.pendingApprovals.get(actionId);
       if (pending) {
         pending.resolve('approve');
@@ -64,7 +69,7 @@ export class Supervisor extends EventEmitter {
       }
     });
 
-    this.dashboard.on('deny', (actionId) => {
+    this.dashboard?.on('deny', (actionId) => {
       const pending = this.pendingApprovals.get(actionId);
       if (pending) {
         pending.resolve('deny');
@@ -72,15 +77,15 @@ export class Supervisor extends EventEmitter {
       }
     });
 
-    this.dashboard.on('pause', () => {
+    this.dashboard?.on('pause', () => {
       this.isPaused = true;
-      this.dashboard.updateMode('paused');
+      this.dashboard?.updateMode('paused');
       this.logger.info('Session paused via dashboard');
     });
 
-    this.dashboard.on('resume', () => {
+    this.dashboard?.on('resume', () => {
       this.isPaused = false;
-      this.dashboard.updateMode(this.config.mode);
+      this.dashboard?.updateMode(this.config.mode);
       this.logger.info('Session resumed via dashboard');
     });
   }
@@ -91,19 +96,21 @@ export class Supervisor extends EventEmitter {
   async runQueue(taskQueue) {
     const tasks = await taskQueue.getTasks();
     this.logger.info(`Starting queue with ${tasks.length} tasks`);
-    
-    // Start dashboard
-    await this.dashboard.start();
-    this.dashboard.updateMode(this.config.mode);
-    this.dashboard.updateQueue(tasks);
-    this.dashboard.updateStats(this.sessionStats);
 
-    // Add session started action
-    this.dashboard.addAction({
-      type: 'session_started',
-      description: `Session started in ${this.config.mode} mode with ${tasks.length} tasks`,
-      status: 'success'
-    });
+    // Start dashboard if enabled
+    if (this.dashboard) {
+      await this.dashboard?.start();
+      this.dashboard?.updateMode(this.config.mode);
+      this.dashboard?.updateQueue(tasks);
+      this.dashboard?.updateStats(this.sessionStats);
+
+      // Add session started action
+      this.dashboard?.addAction({
+        type: 'session_started',
+        description: `Session started in ${this.config.mode} mode with ${tasks.length} tasks`,
+        status: 'success'
+      });
+    }
 
     // Send Slack notification
     await this.slack.sessionStart(this.config.mode, tasks.length);
@@ -117,10 +124,10 @@ export class Supervisor extends EventEmitter {
       }
       
       spinner.text = `Task: ${task.description?.slice(0, 50)}...`;
-      this.dashboard.updateTask(task);
+      this.dashboard?.updateTask(task);
 
       // Add task started action
-      this.dashboard.addAction({
+      this.dashboard?.addAction({
         type: 'task_started',
         description: task.description || task.prompt || `Task ${task.id}`,
         target: task.id,
@@ -144,10 +151,10 @@ export class Supervisor extends EventEmitter {
           errors: 0
         };
 
-        this.dashboard.taskCompleted(task);
+        this.dashboard?.taskCompleted(task);
 
         // Add task completed action
-        this.dashboard.addAction({
+        this.dashboard?.addAction({
           type: 'task_completed',
           description: task.description || task.prompt || `Task ${task.id}`,
           target: task.id,
@@ -161,10 +168,10 @@ export class Supervisor extends EventEmitter {
         this.sessionStats.tasksFailed++;
         
         this.logger.error(`Task failed: ${task.id}`, error);
-        this.dashboard.taskFailed(task, error.message);
+        this.dashboard?.taskFailed(task, error.message);
 
         // Add task failed action
-        this.dashboard.addAction({
+        this.dashboard?.addAction({
           type: 'task_failed',
           description: `${task.description || task.prompt || `Task ${task.id}`}: ${error.message}`,
           target: task.id,
@@ -181,14 +188,14 @@ export class Supervisor extends EventEmitter {
       }
       
       // Update dashboard stats
-      this.dashboard.updateStats(this.sessionStats);
-      this.dashboard.updateInsights(this.detector.getInsights());
+      this.dashboard?.updateStats(this.sessionStats);
+      this.dashboard?.updateInsights(this.detector.getInsights());
     }
-    
+
     spinner.succeed(`Queue complete: ${this.sessionStats.tasksCompleted} tasks`);
-    
+
     // Add session complete action
-    this.dashboard.addAction({
+    this.dashboard?.addAction({
       type: 'session_complete',
       description: `Session complete: ${this.sessionStats.tasksCompleted} completed, ${this.sessionStats.tasksFailed} failed`,
       status: 'success'
@@ -199,9 +206,7 @@ export class Supervisor extends EventEmitter {
     this.printSummary();
 
     // Keep dashboard running after completion
-    if (this.dashboard.sessionComplete) {
-      this.dashboard.sessionComplete();
-    }
+    this.dashboard?.sessionComplete?.();
   }
 
  /**
@@ -228,13 +233,13 @@ export class Supervisor extends EventEmitter {
       // Handle stdout - write to terminal and broadcast to dashboard
       proc.stdout.on('data', (data) => {
         process.stdout.write(data);
-        this.dashboard.addOutput(data);
+        this.dashboard?.addOutput(data);
       });
 
       // Handle stderr - write to terminal and broadcast to dashboard
       proc.stderr.on('data', (data) => {
         process.stderr.write(data);
-        this.dashboard.addOutput(data);
+        this.dashboard?.addOutput(data);
       });
 
       proc.on('close', (code) => {
@@ -242,7 +247,7 @@ export class Supervisor extends EventEmitter {
         this.logger.info(`Task completed with code ${code}`);
         // Note: Stats are updated in runQueue() to avoid double-counting
         // Only broadcast the current stats here for real-time updates
-        this.dashboard.updateStats(this.sessionStats);
+        this.dashboard?.updateStats(this.sessionStats);
         resolve({ code });
       });
 
@@ -261,7 +266,7 @@ export class Supervisor extends EventEmitter {
    */
   async handleAction(action) {
     // Update dashboard
-    this.dashboard.addAction(action);
+    this.dashboard?.addAction(action);
     
     // Get recommendation from smart detector
     const recommendation = this.detector.shouldAutoAccept(action, this.config);
@@ -329,11 +334,11 @@ export class Supervisor extends EventEmitter {
    */
   async startInteractive(projectPath) {
     // Start dashboard
-    await this.dashboard.start();
-    this.dashboard.updateMode('copilot');
+    await this.dashboard?.start();
+    this.dashboard?.updateMode('copilot');
 
     // Add session started action
-    this.dashboard.addAction({
+    this.dashboard?.addAction({
       type: 'session_started',
       description: 'Copilot session started',
       status: 'success'
@@ -370,7 +375,7 @@ export class Supervisor extends EventEmitter {
             } else {
               const taskDesc = args.join(' ');
               console.log(chalk.cyan('\n--- Running Task ---\n'));
-              this.dashboard.addAction({
+              this.dashboard?.addAction({
                 type: 'task_started',
                 description: taskDesc,
                 status: 'running'
@@ -379,8 +384,8 @@ export class Supervisor extends EventEmitter {
                 await this.runSingle(taskDesc);
                 this.sessionStats.tasksCompleted++;
                 this.sessionStats.filesChanged++;
-                this.dashboard.updateStats(this.sessionStats);
-                this.dashboard.addAction({
+                this.dashboard?.updateStats(this.sessionStats);
+                this.dashboard?.addAction({
                   type: 'task_completed',
                   description: taskDesc,
                   status: 'success'
@@ -389,8 +394,8 @@ export class Supervisor extends EventEmitter {
               } catch (error) {
                 this.sessionStats.errors++;
                 this.sessionStats.tasksFailed++;
-                this.dashboard.updateStats(this.sessionStats);
-                this.dashboard.addAction({
+                this.dashboard?.updateStats(this.sessionStats);
+                this.dashboard?.addAction({
                   type: 'task_failed',
                   description: `${taskDesc}: ${error.message}`,
                   status: 'error',
@@ -405,12 +410,12 @@ export class Supervisor extends EventEmitter {
             break;
           case 'pause':
             this.isPaused = true;
-            this.dashboard.updateMode('paused');
+            this.dashboard?.updateMode('paused');
             console.log(chalk.yellow('⏸ Auto-accept paused'));
             break;
           case 'resume':
             this.isPaused = false;
-            this.dashboard.updateMode('copilot');
+            this.dashboard?.updateMode('copilot');
             console.log(chalk.green('▶ Auto-accept resumed'));
             break;
           case 'insights':
@@ -426,7 +431,7 @@ export class Supervisor extends EventEmitter {
       } else if (trimmed) {
         // Treat bare input as a task
         console.log(chalk.cyan('\n--- Running Task ---\n'));
-        this.dashboard.addAction({
+        this.dashboard?.addAction({
           type: 'task_started',
           description: trimmed,
           status: 'running'
@@ -435,8 +440,8 @@ export class Supervisor extends EventEmitter {
           await this.runSingle(trimmed);
           this.sessionStats.tasksCompleted++;
           this.sessionStats.filesChanged++;
-          this.dashboard.updateStats(this.sessionStats);
-          this.dashboard.addAction({
+          this.dashboard?.updateStats(this.sessionStats);
+          this.dashboard?.addAction({
             type: 'task_completed',
             description: trimmed,
             status: 'success'
@@ -445,8 +450,8 @@ export class Supervisor extends EventEmitter {
         } catch (error) {
           this.sessionStats.errors++;
           this.sessionStats.tasksFailed++;
-          this.dashboard.updateStats(this.sessionStats);
-          this.dashboard.addAction({
+          this.dashboard?.updateStats(this.sessionStats);
+          this.dashboard?.addAction({
             type: 'task_failed',
             description: `${trimmed}: ${error.message}`,
             status: 'error',
@@ -590,7 +595,7 @@ export class Supervisor extends EventEmitter {
     }
     
     await this.logger.generateSummary();
-    await this.dashboard.stop();
+    await this.dashboard?.stop();
     
     this.printSummary();
   }

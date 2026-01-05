@@ -1,0 +1,12 @@
+tasks:
+  - id: task-1767568199744-1
+    description: Please go through the presentation studio tool in full. the buttons aren't working and loading the pages that should load
+    prompt: |
+      In edge-oracle, please go through the presentation studio tool in full. the buttons aren't working and loading the pages that should load:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.

@@ -25,16 +25,18 @@ program
   .description('Run in autonomous mode')
   .option('-t, --tasks <file>', 'Task file', './tasks/example-queue.yaml')
   .option('-c, --config <file>', 'Config file', './config.yaml')
+  .option('--no-dashboard', 'Disable the web dashboard')
   .action(async (options) => {
     console.log(chalk.cyan(banner));
     console.log(chalk.yellow('🤖 Starting AUTOPILOT mode...\n'));
-    
+
     const config = await loadConfig(options.config);
     config.mode = 'autopilot';
-    
+    config.dashboard = options.dashboard !== false;
+
     const workDir = config.workingDirectory || process.cwd();
     console.log(chalk.gray(`📁 Working directory: ${workDir}\n`));
-    
+
     const supervisor = new Supervisor(config);
     const queue = new TaskQueue(options.tasks);
     await supervisor.runQueue(queue);

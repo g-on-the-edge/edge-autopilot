@@ -1,0 +1,14 @@
+tasks:
+  - id: task-1767568554343-1
+    status: complete
+    description: Audit all functionality of the Presentation-Studio tool
+    prompt: |
+      In edge-oracle, audit all functionality of the presentation-studio tool:
+
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+
+      Do not ask questions - just do it.
+    completedAt: 2026-01-04T23:19:46.424Z

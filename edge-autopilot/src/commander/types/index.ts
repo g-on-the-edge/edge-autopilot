@@ -13,6 +13,17 @@ export interface Task {
   status: 'pending' | 'running' | 'complete' | 'failed';
   completedAt?: string;
   error?: string;
+  output?: string;  // Full output from Claude
+}
+
+export interface TaskResult {
+  taskId: string;
+  description: string;
+  status: 'complete' | 'failed';
+  output: string;
+  completedAt: string;
+  duration?: number;
+  filesChanged?: string[];
 }
 
 export interface TaskFile {

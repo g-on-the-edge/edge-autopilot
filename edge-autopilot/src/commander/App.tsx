@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { Bot, Zap } from 'lucide-react';
-import type { Project, Task, LogEntry, SessionStats } from './types';
+import type { Project, Task, LogEntry, SessionStats, TaskResult } from './types';
 import {
   ProjectSelector,
   TaskInput,
@@ -8,6 +8,7 @@ import {
   LogPanel,
   StatsPanel,
   TemplateButtons,
+  ResultsPanel,
 } from './components';
 import { AutopilotRunner, createLogEntry, calculateStats } from './services/autopilotRunner';
 
@@ -15,6 +16,7 @@ export function App() {
   const [project, setProject] = useState<Project | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [logs, setLogs] = useState<LogEntry[]>([]);
+  const [results, setResults] = useState<TaskResult[]>([]);
   const [stats, setStats] = useState<SessionStats>({
     totalTasks: 0,
     completedTasks: 0,
@@ -24,6 +26,7 @@ export function App() {
   });
   const [isRunning, setIsRunning] = useState(false);
   const [runner, setRunner] = useState<AutopilotRunner | null>(null);
+  const [activeTab, setActiveTab] = useState<'logs' | 'results'>('logs');
 
   const handleLog = useCallback((entry: LogEntry) => {
     setLogs((prev) => [...prev, entry]);
@@ -37,6 +40,12 @@ export function App() {
     setTasks((prev) =>
       prev.map((t) => (t.id === updatedTask.id ? updatedTask : t))
     );
+  }, []);
+
+  const handleTaskResult = useCallback((result: TaskResult) => {
+    setResults((prev) => [...prev, result]);
+    // Auto-switch to results tab when a task completes
+    setActiveTab('results');
   }, []);
 
   function handleTasksGenerated(newTasks: Task[]) {
@@ -59,7 +68,8 @@ export function App() {
     if (!project || tasks.length === 0) return;
 
     setIsRunning(true);
-    const newRunner = new AutopilotRunner(handleLog, handleStats, handleTaskUpdate);
+    setActiveTab('logs');  // Switch to logs when starting
+    const newRunner = new AutopilotRunner(handleLog, handleStats, handleTaskUpdate, handleTaskResult);
     setRunner(newRunner);
 
     // Reset pending tasks
@@ -85,6 +95,10 @@ export function App() {
 
   function handleClearLogs() {
     setLogs([]);
+  }
+
+  function handleClearResults() {
+    setResults([]);
   }
 
   return (
@@ -161,9 +175,45 @@ export function App() {
             </div>
           </div>
 
-          {/* Right Panel */}
-          <div className="col-span-4 bg-slate-800/50 border border-slate-700 rounded-xl overflow-hidden">
-            <LogPanel logs={logs} onClear={handleClearLogs} />
+          {/* Right Panel - Tabs for Logs/Results */}
+          <div className="col-span-4 bg-slate-800/50 border border-slate-700 rounded-xl overflow-hidden flex flex-col">
+            {/* Tab Headers */}
+            <div className="flex border-b border-slate-700">
+              <button
+                onClick={() => setActiveTab('logs')}
+                className={`flex-1 px-4 py-2 text-sm font-medium transition-colors ${
+                  activeTab === 'logs'
+                    ? 'text-teal-400 border-b-2 border-teal-400 bg-slate-800/50'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                Logs ({logs.length})
+              </button>
+              <button
+                onClick={() => setActiveTab('results')}
+                className={`flex-1 px-4 py-2 text-sm font-medium transition-colors ${
+                  activeTab === 'results'
+                    ? 'text-teal-400 border-b-2 border-teal-400 bg-slate-800/50'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                Results ({results.length})
+                {results.length > 0 && activeTab !== 'results' && (
+                  <span className="ml-1 px-1.5 py-0.5 text-xs bg-teal-500 text-white rounded-full">
+                    New
+                  </span>
+                )}
+              </button>
+            </div>
+
+            {/* Tab Content */}
+            <div className="flex-1 overflow-hidden">
+              {activeTab === 'logs' ? (
+                <LogPanel logs={logs} onClear={handleClearLogs} />
+              ) : (
+                <ResultsPanel results={results} onClear={handleClearResults} />
+              )}
+            </div>
           </div>
         </div>
       </main>

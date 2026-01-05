@@ -1,0 +1,947 @@
+tasks:
+  - id: task-1767568554343-1
+    description: Audit all functionality of the Presentation-Studio tool
+    prompt: |
+      In edge-oracle, audit all functionality of the presentation-studio tool:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971262-2
+    description: Audit all functionality of the Presentation-Studio tool
+    prompt: |
+      In edge-oracle, audit all functionality of the presentation-studio tool:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971262-3
+    description: See console errors
+    prompt: |
+      In edge-oracle, see console errors:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971262-4
+    description: SupabaseAuthContext.tsx:864 [SupabaseAuth] No profile memberships available
+    prompt: |
+      In edge-oracle, supabaseauthcontext.tsx:864 [supabaseauth] no profile memberships available:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971262-5
+    description: SupabaseAuthContext.tsx:894 [SupabaseAuth] currentOrganization: undefined undefined
+    prompt: |
+      In edge-oracle, supabaseauthcontext.tsx:894 [supabaseauth] currentorganization: undefined undefined:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971262-6
+    description: installHook.js:1 [SupabaseAuth] No profile memberships available
+    prompt: |
+      In edge-oracle, installhook.js:1 [supabaseauth] no profile memberships available:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971262-7
+    description: installHook.js:1 [SupabaseAuth] currentOrganization: undefined undefined
+    prompt: |
+      In edge-oracle, installhook.js:1 [supabaseauth] currentorganization: undefined undefined:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-8
+    description: SupabaseAuthContext.tsx:447 [SupabaseAuth] Initializing auth state...
+    prompt: |
+      In edge-oracle, supabaseauthcontext.tsx:447 [supabaseauth] initializing auth state...:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-9
+    description: authMetrics.ts:227 [AuthMetrics] 📊 session_init_start
+    prompt: |
+      In edge-oracle, authmetrics.ts:227 [authmetrics] 📊 session_init_start:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-10
+    description: SupabaseAuthContext.tsx:600 [SupabaseAuth] localStorage key: sb-qsenuohevevjwxdehwzm-auth-token
+    prompt: |
+      In edge-oracle, supabaseauthcontext.tsx:600 [supabaseauth] localstorage key: sb-qsenuohevevjwxdehwzm-auth-token:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-11
+    description: SupabaseAuthContext.tsx:601 [SupabaseAuth] Stored session exists: true
+    prompt: |
+      In edge-oracle, supabaseauthcontext.tsx:601 [supabaseauth] stored session exists: true:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-12
+    description: SupabaseAuthContext.tsx:607 [SupabaseAuth] Stored session user: greg@ghsedge.com
+    prompt: |
+      In edge-oracle, supabaseauthcontext.tsx:607 [supabaseauth] stored session user: greg@ghsedge.com:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-13
+    description: SupabaseAuthContext.tsx:608 [SupabaseAuth] Stored session expires_at: 1767571278 now: 1767568923
+    prompt: |
+      In edge-oracle, supabaseauthcontext.tsx:608 [supabaseauth] stored session expires_at: 1767571278 now: 1767568923:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-14
+    description: SupabaseAuthContext.tsx:624 [SupabaseAuth] Manual session is valid, will use as fallback
+    prompt: |
+      In edge-oracle, supabaseauthcontext.tsx:624 [supabaseauth] manual session is valid, will use as fallback:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-15
+    description: SupabaseAuthContext.tsx:447 [SupabaseAuth] Initializing auth state...
+    prompt: |
+      In edge-oracle, supabaseauthcontext.tsx:447 [supabaseauth] initializing auth state...:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-16
+    description: authMetrics.ts:227 [AuthMetrics] 📊 session_init_start
+    prompt: |
+      In edge-oracle, authmetrics.ts:227 [authmetrics] 📊 session_init_start:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-17
+    description: SupabaseAuthContext.tsx:600 [SupabaseAuth] localStorage key: sb-qsenuohevevjwxdehwzm-auth-token
+    prompt: |
+      In edge-oracle, supabaseauthcontext.tsx:600 [supabaseauth] localstorage key: sb-qsenuohevevjwxdehwzm-auth-token:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-18
+    description: SupabaseAuthContext.tsx:601 [SupabaseAuth] Stored session exists: true
+    prompt: |
+      In edge-oracle, supabaseauthcontext.tsx:601 [supabaseauth] stored session exists: true:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-19
+    description: SupabaseAuthContext.tsx:607 [SupabaseAuth] Stored session user: greg@ghsedge.com
+    prompt: |
+      In edge-oracle, supabaseauthcontext.tsx:607 [supabaseauth] stored session user: greg@ghsedge.com:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-20
+    description: SupabaseAuthContext.tsx:608 [SupabaseAuth] Stored session expires_at: 1767571278 now: 1767568923
+    prompt: |
+      In edge-oracle, supabaseauthcontext.tsx:608 [supabaseauth] stored session expires_at: 1767571278 now: 1767568923:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-21
+    description: SupabaseAuthContext.tsx:624 [SupabaseAuth] Manual session is valid, will use as fallback
+    prompt: |
+      In edge-oracle, supabaseauthcontext.tsx:624 [supabaseauth] manual session is valid, will use as fallback:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-22
+    description: SupabaseAuthContext.tsx:545 [SupabaseAuth] onAuthStateChange: SIGNED_IN {hasSession: true, userId: '69298cf2-2c25-460f-93dc-219bc2134ef7'}
+    prompt: |
+      In edge-oracle, supabaseauthcontext.tsx:545 [supabaseauth] onauthstatechange: signed_in {hassession: true, userid: '69298cf2-2c25-460f-93dc-219bc2134ef7'}:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-23
+    description: SupabaseAuthContext.tsx:572 [SupabaseAuth] SIGNED_IN - fetching profile...
+    prompt: |
+      In edge-oracle, supabaseauthcontext.tsx:572 [supabaseauth] signed_in - fetching profile...:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-24
+    description: authMetrics.ts:227 [AuthMetrics] 📊 profile_fetch_start
+    prompt: |
+      In edge-oracle, authmetrics.ts:227 [authmetrics] 📊 profile_fetch_start:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-25
+    description: SupabaseAuthContext.tsx:180 [SupabaseAuth] Fetching user profile for: 69298cf2-2c25-460f-93dc-219bc2134ef7
+    prompt: |
+      In edge-oracle, supabaseauthcontext.tsx:180 [supabaseauth] fetching user profile for: 69298cf2-2c25-460f-93dc-219bc2134ef7:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-26
+    description: SupabaseAuthContext.tsx:182 [SupabaseAuth] Using access token for authenticated queries
+    prompt: |
+      In edge-oracle, supabaseauthcontext.tsx:182 [supabaseauth] using access token for authenticated queries:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-27
+    description: SupabaseAuthContext.tsx:190 [SupabaseAuth] Testing Supabase connectivity...
+    prompt: |
+      In edge-oracle, supabaseauthcontext.tsx:190 [supabaseauth] testing supabase connectivity...:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-28
+    description: SupabaseAuthContext.tsx:203 [SupabaseAuth] Connectivity test completed in 1302 ms
+    prompt: |
+      In edge-oracle, supabaseauthcontext.tsx:203 [supabaseauth] connectivity test completed in 1302 ms:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-29
+    description: SupabaseAuthContext.tsx:206 [SupabaseAuth] Fetching user data...
+    prompt: |
+      In edge-oracle, supabaseauthcontext.tsx:206 [supabaseauth] fetching user data...:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-30
+    description: SupabaseAuthContext.tsx:221 [SupabaseAuth] User query completed in 307 ms
+    prompt: |
+      In edge-oracle, supabaseauthcontext.tsx:221 [supabaseauth] user query completed in 307 ms:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-31
+    description: SupabaseAuthContext.tsx:224 [SupabaseAuth] Fetching memberships...
+    prompt: |
+      In edge-oracle, supabaseauthcontext.tsx:224 [supabaseauth] fetching memberships...:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-32
+    description: SupabaseAuthContext.tsx:240 [SupabaseAuth] org_memberships response: 200 1 rows
+    prompt: |
+      In edge-oracle, supabaseauthcontext.tsx:240 [supabaseauth] org_memberships response: 200 1 rows:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-33
+    description: SupabaseAuthContext.tsx:284 [SupabaseAuth] organizations: 1 roles: 1
+    prompt: |
+      In edge-oracle, supabaseauthcontext.tsx:284 [supabaseauth] organizations: 1 roles: 1:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-34
+    description: SupabaseAuthContext.tsx:381 [SupabaseAuth] Profile fetched successfully: 1 memberships
+    prompt: |
+      In edge-oracle, supabaseauthcontext.tsx:381 [supabaseauth] profile fetched successfully: 1 memberships:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-35
+    description: authMetrics.ts:227 [AuthMetrics] ✅ profile_fetch_success (2562ms)
+    prompt: |
+      In edge-oracle, authmetrics.ts:227 [authmetrics] ✅ profile_fetch_success (2562ms):
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-36
+    description: SupabaseAuthContext.tsx:576 [SupabaseAuth] fetchProfile completed successfully
+    prompt: |
+      In edge-oracle, supabaseauthcontext.tsx:576 [supabaseauth] fetchprofile completed successfully:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-37
+    description: SupabaseAuthContext.tsx:888 [SupabaseAuth] currentMembership found: 00000000-0000-0000-0000-000000000001
+    prompt: |
+      In edge-oracle, supabaseauthcontext.tsx:888 [supabaseauth] currentmembership found: 00000000-0000-0000-0000-000000000001:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-38
+    description: SupabaseAuthContext.tsx:894 [SupabaseAuth] currentOrganization: 00000000-0000-0000-0000-000000000001 Emplify Health
+    prompt: |
+      In edge-oracle, supabaseauthcontext.tsx:894 [supabaseauth] currentorganization: 00000000-0000-0000-0000-000000000001 emplify health:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-39
+    description: installHook.js:1 [SupabaseAuth] currentMembership found: 00000000-0000-0000-0000-000000000001
+    prompt: |
+      In edge-oracle, installhook.js:1 [supabaseauth] currentmembership found: 00000000-0000-0000-0000-000000000001:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-40
+    description: installHook.js:1 [SupabaseAuth] currentOrganization: 00000000-0000-0000-0000-000000000001 Emplify Health
+    prompt: |
+      In edge-oracle, installhook.js:1 [supabaseauth] currentorganization: 00000000-0000-0000-0000-000000000001 emplify health:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-41
+    description: SupabaseAuthContext.tsx:643 [SupabaseAuth] getSession() returned after 2577 ms
+    prompt: |
+      In edge-oracle, supabaseauthcontext.tsx:643 [supabaseauth] getsession() returned after 2577 ms:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-42
+    description: SupabaseAuthContext.tsx:644 [SupabaseAuth] getSession() session: greg@ghsedge.com
+    prompt: |
+      In edge-oracle, supabaseauthcontext.tsx:644 [supabaseauth] getsession() session: greg@ghsedge.com:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-43
+    description: SupabaseAuthContext.tsx:545 [SupabaseAuth] onAuthStateChange: INITIAL_SESSION {hasSession: true, userId: '69298cf2-2c25-460f-93dc-219bc2134ef7'}
+    prompt: |
+      In edge-oracle, supabaseauthcontext.tsx:545 [supabaseauth] onauthstatechange: initial_session {hassession: true, userid: '69298cf2-2c25-460f-93dc-219bc2134ef7'}:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-44
+    description: SupabaseAuthContext.tsx:482 [SupabaseAuth] Initial session found, fetching profile...
+    prompt: |
+      In edge-oracle, supabaseauthcontext.tsx:482 [supabaseauth] initial session found, fetching profile...:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-45
+    description: SupabaseAuthContext.tsx:488 [SupabaseAuth] Setting session on Supabase client...
+    prompt: |
+      In edge-oracle, supabaseauthcontext.tsx:488 [supabaseauth] setting session on supabase client...:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-46
+    description: authMetrics.ts:227 [AuthMetrics] 📊 profile_fetch_start
+    prompt: |
+      In edge-oracle, authmetrics.ts:227 [authmetrics] 📊 profile_fetch_start:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-47
+    description: SupabaseAuthContext.tsx:180 [SupabaseAuth] Fetching user profile for: 69298cf2-2c25-460f-93dc-219bc2134ef7
+    prompt: |
+      In edge-oracle, supabaseauthcontext.tsx:180 [supabaseauth] fetching user profile for: 69298cf2-2c25-460f-93dc-219bc2134ef7:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-48
+    description: SupabaseAuthContext.tsx:182 [SupabaseAuth] Using access token for authenticated queries
+    prompt: |
+      In edge-oracle, supabaseauthcontext.tsx:182 [supabaseauth] using access token for authenticated queries:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-49
+    description: SupabaseAuthContext.tsx:190 [SupabaseAuth] Testing Supabase connectivity...
+    prompt: |
+      In edge-oracle, supabaseauthcontext.tsx:190 [supabaseauth] testing supabase connectivity...:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-50
+    description: SupabaseAuthContext.tsx:203 [SupabaseAuth] Connectivity test completed in 169 ms
+    prompt: |
+      In edge-oracle, supabaseauthcontext.tsx:203 [supabaseauth] connectivity test completed in 169 ms:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-51
+    description: SupabaseAuthContext.tsx:206 [SupabaseAuth] Fetching user data...
+    prompt: |
+      In edge-oracle, supabaseauthcontext.tsx:206 [supabaseauth] fetching user data...:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-52
+    description: SupabaseAuthContext.tsx:221 [SupabaseAuth] User query completed in 162 ms
+    prompt: |
+      In edge-oracle, supabaseauthcontext.tsx:221 [supabaseauth] user query completed in 162 ms:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-53
+    description: SupabaseAuthContext.tsx:224 [SupabaseAuth] Fetching memberships...
+    prompt: |
+      In edge-oracle, supabaseauthcontext.tsx:224 [supabaseauth] fetching memberships...:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-54
+    description: SupabaseAuthContext.tsx:545 [SupabaseAuth] onAuthStateChange: SIGNED_IN {hasSession: true, userId: '69298cf2-2c25-460f-93dc-219bc2134ef7'}
+    prompt: |
+      In edge-oracle, supabaseauthcontext.tsx:545 [supabaseauth] onauthstatechange: signed_in {hassession: true, userid: '69298cf2-2c25-460f-93dc-219bc2134ef7'}:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-55
+    description: SupabaseAuthContext.tsx:569 [SupabaseAuth] SIGNED_IN skipped - profile already fetched for user
+    prompt: |
+      In edge-oracle, supabaseauthcontext.tsx:569 [supabaseauth] signed_in skipped - profile already fetched for user:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-56
+    description: SupabaseAuthContext.tsx:498 [SupabaseAuth] setSession completed successfully
+    prompt: |
+      In edge-oracle, supabaseauthcontext.tsx:498 [supabaseauth] setsession completed successfully:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-57
+    description: SupabaseAuthContext.tsx:643 [SupabaseAuth] getSession() returned after 2947 ms
+    prompt: |
+      In edge-oracle, supabaseauthcontext.tsx:643 [supabaseauth] getsession() returned after 2947 ms:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-58
+    description: SupabaseAuthContext.tsx:644 [SupabaseAuth] getSession() session: greg@ghsedge.com
+    prompt: |
+      In edge-oracle, supabaseauthcontext.tsx:644 [supabaseauth] getsession() session: greg@ghsedge.com:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-59
+    description: SupabaseAuthContext.tsx:635 [SupabaseAuth] getSession() timed out, using manual session fallback
+    prompt: |
+      In edge-oracle, supabaseauthcontext.tsx:635 [supabaseauth] getsession() timed out, using manual session fallback:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-60
+    description: SupabaseAuthContext.tsx:635 [SupabaseAuth] getSession() timed out, using manual session fallback
+    prompt: |
+      In edge-oracle, supabaseauthcontext.tsx:635 [supabaseauth] getsession() timed out, using manual session fallback:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-61
+    description: SupabaseAuthContext.tsx:240 [SupabaseAuth] org_memberships response: 200 1 rows
+    prompt: |
+      In edge-oracle, supabaseauthcontext.tsx:240 [supabaseauth] org_memberships response: 200 1 rows:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-62
+    description: SupabaseAuthContext.tsx:284 [SupabaseAuth] organizations: 1 roles: 1
+    prompt: |
+      In edge-oracle, supabaseauthcontext.tsx:284 [supabaseauth] organizations: 1 roles: 1:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-63
+    description: SupabaseAuthContext.tsx:381 [SupabaseAuth] Profile fetched successfully: 1 memberships
+    prompt: |
+      In edge-oracle, supabaseauthcontext.tsx:381 [supabaseauth] profile fetched successfully: 1 memberships:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-64
+    description: authMetrics.ts:227 [AuthMetrics] ✅ profile_fetch_success (852ms)
+    prompt: |
+      In edge-oracle, authmetrics.ts:227 [authmetrics] ✅ profile_fetch_success (852ms):
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-65
+    description: SupabaseAuthContext.tsx:888 [SupabaseAuth] currentMembership found: 00000000-0000-0000-0000-000000000001
+    prompt: |
+      In edge-oracle, supabaseauthcontext.tsx:888 [supabaseauth] currentmembership found: 00000000-0000-0000-0000-000000000001:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-66
+    description: SupabaseAuthContext.tsx:894 [SupabaseAuth] currentOrganization: 00000000-0000-0000-0000-000000000001 Emplify Health
+    prompt: |
+      In edge-oracle, supabaseauthcontext.tsx:894 [supabaseauth] currentorganization: 00000000-0000-0000-0000-000000000001 emplify health:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-67
+    description: installHook.js:1 [SupabaseAuth] currentMembership found: 00000000-0000-0000-0000-000000000001
+    prompt: |
+      In edge-oracle, installhook.js:1 [supabaseauth] currentmembership found: 00000000-0000-0000-0000-000000000001:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-68
+    description: installHook.js:1 [SupabaseAuth] currentOrganization: 00000000-0000-0000-0000-000000000001 Emplify Health
+    prompt: |
+      In edge-oracle, installhook.js:1 [supabaseauth] currentorganization: 00000000-0000-0000-0000-000000000001 emplify health:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-69
+    description: SupabaseAuthContext.tsx:888 [SupabaseAuth] currentMembership found: 00000000-0000-0000-0000-000000000001
+    prompt: |
+      In edge-oracle, supabaseauthcontext.tsx:888 [supabaseauth] currentmembership found: 00000000-0000-0000-0000-000000000001:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-70
+    description: SupabaseAuthContext.tsx:894 [SupabaseAuth] currentOrganization: 00000000-0000-0000-0000-000000000001 Emplify Health
+    prompt: |
+      In edge-oracle, supabaseauthcontext.tsx:894 [supabaseauth] currentorganization: 00000000-0000-0000-0000-000000000001 emplify health:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-71
+    description: installHook.js:1 [SupabaseAuth] currentMembership found: 00000000-0000-0000-0000-000000000001
+    prompt: |
+      In edge-oracle, installhook.js:1 [supabaseauth] currentmembership found: 00000000-0000-0000-0000-000000000001:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-72
+    description: installHook.js:1 [SupabaseAuth] currentOrganization: 00000000-0000-0000-0000-000000000001 Emplify Health
+    prompt: |
+      In edge-oracle, installhook.js:1 [supabaseauth] currentorganization: 00000000-0000-0000-0000-000000000001 emplify health:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-73
+    description: SupabaseAuthContext.tsx:888 [SupabaseAuth] currentMembership found: 00000000-0000-0000-0000-000000000001
+    prompt: |
+      In edge-oracle, supabaseauthcontext.tsx:888 [supabaseauth] currentmembership found: 00000000-0000-0000-0000-000000000001:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-74
+    description: SupabaseAuthContext.tsx:894 [SupabaseAuth] currentOrganization: 00000000-0000-0000-0000-000000000001 Emplify Health
+    prompt: |
+      In edge-oracle, supabaseauthcontext.tsx:894 [supabaseauth] currentorganization: 00000000-0000-0000-0000-000000000001 emplify health:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-75
+    description: installHook.js:1 [SupabaseAuth] currentMembership found: 00000000-0000-0000-0000-000000000001
+    prompt: |
+      In edge-oracle, installhook.js:1 [supabaseauth] currentmembership found: 00000000-0000-0000-0000-000000000001:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-76
+    description: installHook.js:1 [SupabaseAuth] currentOrganization: 00000000-0000-0000-0000-000000000001 Emplify Health
+    prompt: |
+      In edge-oracle, installhook.js:1 [supabaseauth] currentorganization: 00000000-0000-0000-0000-000000000001 emplify health:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-77
+    description: @supabase_supabase-js.js?v=4895b80b:11439  POST https://qsenuohevevjwxdehwzm.supabase.co/rest/v1/presentation_projects?select=* 400 (Bad Request)
+    prompt: |
+      In edge-oracle, @supabase_supabase-js.js?v=4895b80b:11439  post https://qsenuohevevjwxdehwzm.supabase.co/rest/v1/presentation_projects?select=* 400 (bad request):
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-78
+    description: (anonymous) @ @supabase_supabase-js.js?v=4895b80b:11439
+    prompt: |
+      In edge-oracle, (anonymous) @ @supabase_supabase-js.js?v=4895b80b:11439:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-79
+    description: (anonymous) @ @supabase_supabase-js.js?v=4895b80b:11453
+    prompt: |
+      In edge-oracle, (anonymous) @ @supabase_supabase-js.js?v=4895b80b:11453:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-80
+    description: await in (anonymous)
+    prompt: |
+      In edge-oracle, await in (anonymous):
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-81
+    description: then @ @supabase_supabase-js.js?v=4895b80b:305
+    prompt: |
+      In edge-oracle, then @ @supabase_supabase-js.js?v=4895b80b:305:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-82
+    description: @supabase_supabase-js.js?v=4895b80b:11439  POST https://qsenuohevevjwxdehwzm.supabase.co/rest/v1/presentation_projects?select=* 400 (Bad Request)
+    prompt: |
+      In edge-oracle, @supabase_supabase-js.js?v=4895b80b:11439  post https://qsenuohevevjwxdehwzm.supabase.co/rest/v1/presentation_projects?select=* 400 (bad request):
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-83
+    description: (anonymous) @ @supabase_supabase-js.js?v=4895b80b:11439
+    prompt: |
+      In edge-oracle, (anonymous) @ @supabase_supabase-js.js?v=4895b80b:11439:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-84
+    description: (anonymous) @ @supabase_supabase-js.js?v=4895b80b:11453
+    prompt: |
+      In edge-oracle, (anonymous) @ @supabase_supabase-js.js?v=4895b80b:11453:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-85
+    description: await in (anonymous)
+    prompt: |
+      In edge-oracle, await in (anonymous):
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767568971263-86
+    description: then @ @supabase_supabase-js.js?v=4895b80b:305
+    prompt: |
+      In edge-oracle, then @ @supabase_supabase-js.js?v=4895b80b:305:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.

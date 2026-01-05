@@ -1,0 +1,45 @@
+tasks:
+  - id: task-1767567794342-1
+    description: Audit the Presentation-Studio tool
+    prompt: |
+      In edge-oracle, audit the presentation-studio tool:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767567794342-2
+    description: It's not working correctly
+    prompt: |
+      In edge-oracle, it's not working correctly:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767567794342-3
+    description: New Project button doesn't work
+    prompt: |
+      In edge-oracle, new project button doesn't work:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
+  - id: task-1767567794342-4
+    description: Neither does the create from template work.
+    prompt: |
+      In edge-oracle, neither does the create from template work.:
+      
+      1. Analyze what needs to be done
+      2. Implement the changes
+      3. Verify the implementation works
+      4. Run build to check for errors
+      
+      Do not ask questions - just do it.
