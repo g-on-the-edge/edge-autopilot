@@ -7,6 +7,8 @@ export default defineConfig({
   root: path.resolve(__dirname, 'src/commander'),
   server: {
     port: 3848,
+    strictPort: true,
+    host: '127.0.0.1',
     open: true,
   },
   build: {

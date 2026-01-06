@@ -2,12 +2,126 @@ const vscode = require('vscode');
 const { spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
+const http = require('http');
 
 let statusBarItem;
 let outputChannel;
 let activeSession = null;
 let isPaused = false;
-let commandCenterProcess = null;
+let commandCenterProcess = null; // legacy: older single-process launcher
+let commanderServerProcess = null;
+let commanderUiProcess = null;
+
+function httpOk(urlString, timeoutMs = 800) {
+    return new Promise((resolve) => {
+        try {
+            const url = new URL(urlString);
+            const req = http.request(
+                {
+                    method: 'GET',
+                    hostname: url.hostname,
+                    port: url.port,
+                    path: url.pathname + url.search,
+                    timeout: timeoutMs,
+                },
+                (res) => {
+                    // Drain data to allow 'end' to fire
+                    res.on('data', () => {});
+                    res.on('end', () => resolve(res.statusCode >= 200 && res.statusCode < 300));
+                }
+            );
+            req.on('timeout', () => {
+                req.destroy();
+                resolve(false);
+            });
+            req.on('error', () => resolve(false));
+            req.end();
+        } catch {
+            resolve(false);
+        }
+    });
+}
+
+async function isCommanderApiHealthy() {
+    return httpOk('http://127.0.0.1:3849/api/projects', 600);
+}
+
+function stopProcess(proc, label) {
+    if (!proc) return;
+    try {
+        proc.kill('SIGTERM');
+    } catch {}
+    outputChannel?.appendLine(`\n[${label}] stop requested`);
+}
+
+function attachProcessLogging(proc, label) {
+    proc.stdout?.on('data', (d) => outputChannel.append(d.toString()));
+    proc.stderr?.on('data', (d) => outputChannel.append(d.toString()));
+
+    proc.on('error', (err) => {
+        outputChannel.appendLine(`\n[${label}] failed to start: ${err?.message || String(err)}`);
+        vscode.window.showErrorMessage(
+            `${label} failed to start: ${err?.message || String(err)}. See “Edge Autopilot” output for details.`
+        );
+    });
+}
+
+function getListeningProcessOnPort(port) {
+    return new Promise((resolve) => {
+        const lsofCmd = process.platform === 'win32' ? null : 'lsof';
+        if (!lsofCmd) return resolve(null);
+
+        const child = spawn(lsofCmd, ['-nP', `-iTCP:${port}`, '-sTCP:LISTEN'], {
+            shell: false,
+        });
+
+        let out = '';
+        let err = '';
+        child.stdout?.on('data', (d) => (out += d.toString()));
+        child.stderr?.on('data', (d) => (err += d.toString()));
+
+        child.on('error', () => resolve(null));
+        child.on('close', () => {
+            const text = (out || '').trim();
+            if (!text) return resolve(null);
+
+            const lines = text.split(/\r?\n/).filter(Boolean);
+            // Expect:
+            // COMMAND   PID USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME
+            // node    12345 ...
+            const dataLine = lines.find((l) => !l.startsWith('COMMAND'));
+            if (!dataLine) return resolve(null);
+
+            const parts = dataLine.split(/\s+/);
+            const command = parts[0];
+            const pid = Number(parts[1]);
+            if (!Number.isFinite(pid)) return resolve(null);
+            resolve({ pid, command, raw: text, err: err.trim() });
+        });
+    });
+}
+
+async function isCommandCenterHealthy() {
+    return isCommanderApiHealthy();
+}
+
+function stopCommandCenterProcess() {
+    // legacy process
+    if (commandCenterProcess) {
+        stopProcess(commandCenterProcess, 'Command Center');
+        commandCenterProcess = null;
+    }
+
+    // new split processes
+    if (commanderServerProcess) {
+        stopProcess(commanderServerProcess, 'Commander Server');
+        commanderServerProcess = null;
+    }
+    if (commanderUiProcess) {
+        stopProcess(commanderUiProcess, 'Commander UI');
+        commanderUiProcess = null;
+    }
+}
 
 /**
  * Activate the extension
@@ -55,16 +169,40 @@ function activate(context) {
 }
 
 function findRepoRoot() {
-    const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-    if (!workspaceRoot) return null;
+    const folders = vscode.workspace.workspaceFolders;
+    if (!folders || folders.length === 0) return null;
 
-    const direct = path.join(workspaceRoot, 'package.json');
-    if (fs.existsSync(direct)) return workspaceRoot;
+    const hasCommandCenterScript = (repoPath) => {
+        try {
+            const pkgPath = path.join(repoPath, 'package.json');
+            if (!fs.existsSync(pkgPath)) return false;
+            const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+            return Boolean(pkg?.scripts?.['command-center']);
+        } catch {
+            return false;
+        }
+    };
 
-    const nested = path.join(workspaceRoot, 'edge-autopilot', 'package.json');
-    if (fs.existsSync(nested)) return path.join(workspaceRoot, 'edge-autopilot');
+    const candidates = [];
 
-    return workspaceRoot;
+    for (const folder of folders) {
+        const root = folder.uri.fsPath;
+        // Direct repo root
+        if (hasCommandCenterScript(root)) candidates.push(root);
+
+        // Common nested layout: <workspace>/edge-autopilot/package.json
+        const nested = path.join(root, 'edge-autopilot');
+        if (hasCommandCenterScript(nested)) candidates.push(nested);
+
+        // Extra safety for deeper nesting (rare)
+        const doubleNested = path.join(root, 'edge-autopilot', 'edge-autopilot');
+        if (hasCommandCenterScript(doubleNested)) candidates.push(doubleNested);
+    }
+
+    if (candidates.length > 0) return candidates[0];
+
+    // Fallback: previous behavior (first folder)
+    return folders[0].uri.fsPath;
 }
 
 async function openCommandCenter() {
@@ -80,22 +218,105 @@ async function openCommandCenter() {
     outputChannel.appendLine('='.repeat(60));
     outputChannel.show(true);
 
-    if (!commandCenterProcess) {
-        const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm';
-        commandCenterProcess = spawn(npmCmd, ['run', 'command-center'], {
+    // New approach: run server + UI as separate processes so we can detect/restart server death.
+    const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+
+    const apiHealthy = await isCommanderApiHealthy();
+
+    // If API is not healthy but the port is already bound, offer to terminate the listener.
+    if (!apiHealthy) {
+        const listener = await getListeningProcessOnPort(3849);
+        if (listener?.pid) {
+            outputChannel.appendLine(
+                `[Commander Server] port 3849 is in use by ${listener.command} (PID ${listener.pid})`
+            );
+            const choice = await vscode.window.showWarningMessage(
+                `Commander Server can't start because port 3849 is already in use by ${listener.command} (PID ${listener.pid}).\n\nKill it and restart the server?`,
+                { modal: true },
+                'Kill & Restart',
+                'Cancel'
+            );
+
+            if (choice === 'Kill & Restart') {
+                try {
+                    process.kill(listener.pid, 'SIGTERM');
+                    outputChannel.appendLine(`[Commander Server] sent SIGTERM to PID ${listener.pid}`);
+                    // Give the OS a moment to release the port
+                    await new Promise((r) => setTimeout(r, 600));
+                } catch (e) {
+                    vscode.window.showErrorMessage(
+                        `Failed to kill PID ${listener.pid}: ${e?.message || String(e)}. See “Edge Autopilot” output for details.`
+                    );
+                }
+            } else {
+                // User declined; don't attempt to start server because we know it'll fail.
+                outputChannel.appendLine('[Commander Server] start aborted by user (port busy)');
+            }
+        }
+    }
+
+    // Re-check after potential kill.
+    const apiHealthyAfter = await isCommanderApiHealthy();
+
+    if (!apiHealthyAfter && !commanderServerProcess) {
+        const listener = await getListeningProcessOnPort(3849);
+        if (listener?.pid) {
+            vscode.window.showErrorMessage(
+                `Port 3849 is still in use (PID ${listener.pid}). Stop it, then try again.`
+            );
+        }
+    }
+    if (commanderServerProcess && !apiHealthyAfter) {
+        outputChannel.appendLine('[Commander Server] not responding on :3849; restarting...');
+        stopProcess(commanderServerProcess, 'Commander Server');
+        commanderServerProcess = null;
+    }
+
+    if (!commanderServerProcess && !apiHealthyAfter) {
+        outputChannel.appendLine('[Commander Server] starting...');
+        commanderServerProcess = spawn(npmCmd, ['run', 'commander:server'], {
             cwd: repoRoot,
             shell: process.platform === 'win32',
         });
-
-        commandCenterProcess.stdout?.on('data', (d) => outputChannel.append(d.toString()));
-        commandCenterProcess.stderr?.on('data', (d) => outputChannel.append(d.toString()));
-
-        commandCenterProcess.on('close', (code) => {
-            outputChannel.appendLine(`\n[Command Center] stopped (code ${code})`);
-            commandCenterProcess = null;
+        attachProcessLogging(commanderServerProcess, 'Commander Server');
+        commanderServerProcess.on('close', (code) => {
+            outputChannel.appendLine(`\n[Commander Server] stopped (code ${code})`);
+            if (code && code !== 0) {
+                vscode.window.showErrorMessage(
+                    `Commander Server exited with code ${code}. See “Edge Autopilot” output for details.`
+                );
+            }
+            commanderServerProcess = null;
         });
     } else {
-        outputChannel.appendLine('[Command Center] already running; opening UI...');
+        outputChannel.appendLine('[Commander Server] already running');
+    }
+
+    if (!commanderUiProcess) {
+        outputChannel.appendLine('[Commander UI] starting...');
+        commanderUiProcess = spawn(npmCmd, ['run', 'commander'], {
+            cwd: repoRoot,
+            shell: process.platform === 'win32',
+        });
+        attachProcessLogging(commanderUiProcess, 'Commander UI');
+        commanderUiProcess.on('close', (code) => {
+            outputChannel.appendLine(`\n[Commander UI] stopped (code ${code})`);
+            if (code && code !== 0) {
+                vscode.window.showErrorMessage(
+                    `Commander UI exited with code ${code}. See “Edge Autopilot” output for details.`
+                );
+            }
+            commanderUiProcess = null;
+        });
+    } else {
+        outputChannel.appendLine('[Commander UI] already running; opening UI...');
+    }
+
+    // Best-effort: wait briefly for API to come up so the UI doesn't show connection refused.
+    for (let i = 0; i < 8; i++) {
+        const ok = await isCommanderApiHealthy();
+        if (ok) break;
+        await new Promise((r) => setTimeout(r, 250));
     }
 
     // Give the servers a moment to boot, then open the UI.
@@ -434,6 +655,8 @@ function deactivate() {
     if (activeSession) {
         activeSession.kill();
     }
+
+    stopCommandCenterProcess();
 }
 
 module.exports = { activate, deactivate };

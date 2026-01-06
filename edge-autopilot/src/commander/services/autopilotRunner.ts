@@ -1,7 +1,9 @@
 import type { Task, LogEntry, SessionStats, TaskResult } from '../types';
 
-const WS_URL = 'ws://localhost:3849';
-const API_BASE = 'http://localhost:3849';
+// Use 127.0.0.1 instead of localhost to avoid IPv6 (::1) resolution issues
+// where another dev server might be bound only on ::1 (and accidentally steal this port).
+const WS_URL = 'ws://127.0.0.1:3849';
+const API_BASE = 'http://127.0.0.1:3849';
 
 export type LogCallback = (entry: LogEntry) => void;
 export type StatsCallback = (stats: SessionStats) => void;
@@ -74,6 +76,20 @@ export class AutopilotRunner {
     this.onLog(createLogEntry('info', `Connecting to autopilot server...`));
 
     return new Promise((resolve, reject) => {
+      let settled = false;
+
+      const safeResolve = () => {
+        if (settled) return;
+        settled = true;
+        resolve();
+      };
+
+      const safeReject = (error: unknown) => {
+        if (settled) return;
+        settled = true;
+        reject(error);
+      };
+
       try {
         this.ws = new WebSocket(WS_URL);
 
@@ -101,17 +117,40 @@ export class AutopilotRunner {
         this.ws.onerror = (error) => {
           this.onLog(createLogEntry('error', `WebSocket error: Connection failed. Is the server running?`));
           this.onLog(createLogEntry('info', `Start the server with: node src/commander/server.js`));
-          reject(error);
+          safeReject(error);
         };
 
         this.ws.onclose = () => {
-          this.onLog(createLogEntry('info', `Disconnected from autopilot server`));
+          const unfinished = this.tasks.filter(
+            (t) => t.status === 'pending' || t.status === 'running'
+          );
+
+          if (unfinished.length > 0) {
+            const nowIso = new Date().toISOString();
+            this.onLog(
+              createLogEntry(
+                'warning',
+                `Disconnected from autopilot server; marking ${unfinished.length} unfinished task${unfinished.length !== 1 ? 's' : ''} as failed.`
+              )
+            );
+
+            for (const task of unfinished) {
+              task.status = 'failed';
+              task.completedAt = nowIso;
+              task.error = task.error || 'Disconnected from autopilot server';
+              this.onTaskUpdate(task);
+            }
+          } else {
+            this.onLog(createLogEntry('info', `Disconnected from autopilot server`));
+          }
+
+          this.ws = null;
           this.onStats(calculateStats(this.tasks, this.startTime || undefined));
-          resolve();
+          safeResolve();
         };
       } catch (error) {
         this.onLog(createLogEntry('error', `Failed to connect: ${error}`));
-        reject(error);
+        safeReject(error);
       }
     });
   }

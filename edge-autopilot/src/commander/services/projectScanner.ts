@@ -1,6 +1,7 @@
 import type { Project } from '../types';
 
-const API_BASE = 'http://localhost:3849';
+// Use 127.0.0.1 instead of localhost to avoid IPv6 (::1) resolution issues.
+const API_BASE = 'http://127.0.0.1:3849';
 
 export async function scanProjects(): Promise<Project[]> {
   try {
