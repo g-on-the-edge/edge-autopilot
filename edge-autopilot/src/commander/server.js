@@ -6,8 +6,16 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const PROJECTS_ROOT = '/Users/g/VScode-Programs/Projects';
-const PORT = 3849;
+
+// Allow PROJECTS_ROOT to be configured via environment variable
+// Falls back to common locations if not set
+const PROJECTS_ROOT = process.env.PROJECTS_ROOT ||
+  process.env.HOME + '/VScode-Programs/Projects' ||
+  process.cwd();
+
+const PORT = process.env.COMMANDER_PORT || 3849;
+
+console.log(`[Commander] Projects root: ${PROJECTS_ROOT}`);
 
 // Store active sessions
 const activeSessions = new Map();
@@ -262,8 +270,15 @@ async function runAutopilot(ws, tasks, projectPath, sessionId) {
     const lines = output.split('\n').filter(l => l.trim());
 
     for (const line of lines) {
-      // Parse task progress - match "Running:" which is what supervisor outputs
-      if (line.includes('Running:') && !taskStarted) {
+      // Normalize line for comparison (strip ANSI codes)
+      const cleanLine = line.replace(/\x1b\[[0-9;]*m/g, '').trim();
+
+      // Parse task progress - multiple patterns for "Running" detection
+      const isRunningLine = cleanLine.includes('Running:') ||
+                            cleanLine.match(/^Running\s/i) ||
+                            cleanLine.match(/Task\s+\d+.*running/i);
+
+      if (isRunningLine && !taskStarted) {
         if (currentTaskIndex < tasks.length) {
           ws.send(JSON.stringify({
             type: 'taskUpdate',
@@ -276,98 +291,120 @@ async function runAutopilot(ws, tasks, projectPath, sessionId) {
         }
       }
 
-      // Match "✓ Task completed" or just "Task completed"
-      if (line.includes('Task completed') || (line.includes('✓') && !line.includes('Running'))) {
+      // Match task completion - multiple patterns
+      const isCompletedLine = cleanLine.includes('Task completed') ||
+                              cleanLine.match(/completed.*successfully/i) ||
+                              cleanLine.match(/^✓\s/) ||
+                              (cleanLine.includes('✓') && !cleanLine.includes('Running') && cleanLine.match(/task|complete|done|success/i));
+
+      if (isCompletedLine && currentTaskIndex < tasks.length && taskStarted) {
+        const taskDuration = Date.now() - taskStartTime;
+        const fullOutput = currentTaskOutput.join('').trim();
+
+        // Send task result with full output
+        ws.send(JSON.stringify({
+          type: 'taskResult',
+          taskId: tasks[currentTaskIndex].id,
+          description: tasks[currentTaskIndex].description,
+          status: 'complete',
+          output: fullOutput,
+          completedAt: new Date().toISOString(),
+          duration: taskDuration,
+        }));
+
+        ws.send(JSON.stringify({
+          type: 'taskUpdate',
+          taskId: tasks[currentTaskIndex].id,
+          status: 'complete',
+          completedAt: new Date().toISOString(),
+          output: fullOutput,
+        }));
+
+        currentTaskIndex++;
+        taskStarted = false;
+        currentTaskOutput = [];
+
+        // Start next task if available
         if (currentTaskIndex < tasks.length) {
-          const taskDuration = Date.now() - taskStartTime;
-          const fullOutput = currentTaskOutput.join('').trim();
-
-          // Send task result with full output
-          ws.send(JSON.stringify({
-            type: 'taskResult',
-            taskId: tasks[currentTaskIndex].id,
-            description: tasks[currentTaskIndex].description,
-            status: 'complete',
-            output: fullOutput,
-            completedAt: new Date().toISOString(),
-            duration: taskDuration,
-          }));
-
           ws.send(JSON.stringify({
             type: 'taskUpdate',
             taskId: tasks[currentTaskIndex].id,
-            status: 'complete',
-            completedAt: new Date().toISOString(),
-            output: fullOutput,
+            status: 'running',
           }));
-
-          currentTaskIndex++;
-          taskStarted = false;
-          currentTaskOutput = [];
-
-          // Start next task if available
-          if (currentTaskIndex < tasks.length) {
-            ws.send(JSON.stringify({
-              type: 'taskUpdate',
-              taskId: tasks[currentTaskIndex].id,
-              status: 'running',
-            }));
-            taskStarted = true;
-            taskStartTime = Date.now();
-          }
+          taskStarted = true;
+          taskStartTime = Date.now();
         }
       }
 
-      // Match task failures
-      if (line.includes('Task failed') || line.includes('✗') || (line.includes('Error:') && !line.includes('error handling'))) {
+      // Match task failures - multiple patterns
+      const isFailedLine = cleanLine.includes('Task failed') ||
+                           cleanLine.match(/^✗\s/) ||
+                           cleanLine.match(/failed.*with.*code/i) ||
+                           cleanLine.match(/^Error:/i) ||
+                           (cleanLine.includes('✗') && cleanLine.match(/task|fail|error/i));
+
+      // Avoid false positives for "error handling" discussions
+      const isFalsePositive = cleanLine.match(/error\s*handling/i) ||
+                              cleanLine.match(/catch.*error/i) ||
+                              cleanLine.match(/handle.*error/i);
+
+      if (isFailedLine && !isFalsePositive && currentTaskIndex < tasks.length && taskStarted) {
+        const taskDuration = Date.now() - taskStartTime;
+        const fullOutput = currentTaskOutput.join('').trim();
+
+        // Send task result with full output
+        ws.send(JSON.stringify({
+          type: 'taskResult',
+          taskId: tasks[currentTaskIndex].id,
+          description: tasks[currentTaskIndex].description,
+          status: 'failed',
+          output: fullOutput,
+          error: line,
+          completedAt: new Date().toISOString(),
+          duration: taskDuration,
+        }));
+
+        ws.send(JSON.stringify({
+          type: 'taskUpdate',
+          taskId: tasks[currentTaskIndex].id,
+          status: 'failed',
+          error: line,
+          output: fullOutput,
+        }));
+
+        currentTaskIndex++;
+        taskStarted = false;
+        currentTaskOutput = [];
+
+        // Start next task if available
         if (currentTaskIndex < tasks.length) {
-          const taskDuration = Date.now() - taskStartTime;
-          const fullOutput = currentTaskOutput.join('').trim();
-
-          // Send task result with full output
-          ws.send(JSON.stringify({
-            type: 'taskResult',
-            taskId: tasks[currentTaskIndex].id,
-            description: tasks[currentTaskIndex].description,
-            status: 'failed',
-            output: fullOutput,
-            error: line,
-            completedAt: new Date().toISOString(),
-            duration: taskDuration,
-          }));
-
           ws.send(JSON.stringify({
             type: 'taskUpdate',
             taskId: tasks[currentTaskIndex].id,
-            status: 'failed',
-            error: line,
-            output: fullOutput,
+            status: 'running',
           }));
-
-          currentTaskIndex++;
-          taskStarted = false;
-          currentTaskOutput = [];
-
-          // Start next task if available
-          if (currentTaskIndex < tasks.length) {
-            ws.send(JSON.stringify({
-              type: 'taskUpdate',
-              taskId: tasks[currentTaskIndex].id,
-              status: 'running',
-            }));
-            taskStarted = true;
-            taskStartTime = Date.now();
-          }
+          taskStarted = true;
+          taskStartTime = Date.now();
         }
+      }
+
+      // Determine log entry type
+      let logType = 'info';
+      if (cleanLine.includes('Error') || cleanLine.includes('✗') || cleanLine.match(/^error/i)) {
+        logType = 'error';
+      } else if (cleanLine.includes('✓') || cleanLine.match(/completed|success/i)) {
+        logType = 'success';
+      } else if (cleanLine.match(/Modified:|Created:|Wrote:|Deleted:/i)) {
+        logType = 'file-change';
+      } else if (cleanLine.match(/warning/i)) {
+        logType = 'warning';
       }
 
       // Send log entry
       ws.send(JSON.stringify({
         type: 'log',
         entry: {
-          type: line.includes('Error') || line.includes('✗') ? 'error' :
-                line.includes('✓') || line.includes('completed') ? 'success' :
-                line.includes('Modified:') || line.includes('Created:') ? 'file-change' : 'info',
+          type: logType,
           message: line,
           timestamp: new Date().toISOString(),
         }

@@ -12,11 +12,8 @@ export async function scanProjects(): Promise<Project[]> {
     return await response.json();
   } catch (error) {
     console.error('Failed to scan projects:', error);
-    // Return fallback data if server isn't running
-    return [
-      { name: 'edge-autopilot/edge-autopilot', path: '/Users/g/VScode-Programs/Projects/edge-autopilot/edge-autopilot', hasPackageJson: true, hasTasks: true },
-      { name: 'edge-oracle', path: '/Users/g/VScode-Programs/Projects/edge-oracle', hasPackageJson: true, hasTasks: false },
-    ];
+    // Return empty array if server isn't running - UI will show a helpful message
+    return [];
   }
 }
 
@@ -31,8 +28,4 @@ export async function getProjectTasks(projectName: string): Promise<{ name: stri
     console.error('Failed to get project tasks:', error);
     return [];
   }
-}
-
-export function getProjectsRoot(): string {
-  return '/Users/g/VScode-Programs/Projects';
 }

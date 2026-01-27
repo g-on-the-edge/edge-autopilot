@@ -5,6 +5,10 @@ import type { Task, LogEntry, SessionStats, TaskResult } from '../types';
 const WS_URL = 'ws://127.0.0.1:3849';
 const API_BASE = 'http://127.0.0.1:3849';
 
+// Retry configuration
+const MAX_RETRIES = 5;
+const RETRY_DELAY_MS = 1000;
+
 export type LogCallback = (entry: LogEntry) => void;
 export type StatsCallback = (stats: SessionStats) => void;
 export type TaskUpdateCallback = (task: Task) => void;
@@ -75,8 +79,31 @@ export class AutopilotRunner {
 
     this.onLog(createLogEntry('info', `Connecting to autopilot server...`));
 
+    // Try to connect with retries
+    let lastError: unknown = null;
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        await this.connectWebSocket(tasks, projectPath);
+        return; // Success!
+      } catch (error) {
+        lastError = error;
+        if (attempt < MAX_RETRIES) {
+          this.onLog(createLogEntry('warning', `Connection attempt ${attempt} failed, retrying in ${RETRY_DELAY_MS}ms...`));
+          await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS));
+        }
+      }
+    }
+
+    // All retries exhausted
+    this.onLog(createLogEntry('error', `Failed to connect after ${MAX_RETRIES} attempts. Is the server running?`));
+    this.onLog(createLogEntry('info', `Start the server with: npm run commander:server`));
+    throw lastError;
+  }
+
+  private connectWebSocket(tasks: Task[], projectPath: string): Promise<void> {
     return new Promise((resolve, reject) => {
       let settled = false;
+      let connectionOpened = false;
 
       const safeResolve = () => {
         if (settled) return;
@@ -94,6 +121,7 @@ export class AutopilotRunner {
         this.ws = new WebSocket(WS_URL);
 
         this.ws.onopen = () => {
+          connectionOpened = true;
           this.onLog(createLogEntry('success', `Connected to autopilot server`));
 
           // Send start command
@@ -115,9 +143,13 @@ export class AutopilotRunner {
         };
 
         this.ws.onerror = (error) => {
-          this.onLog(createLogEntry('error', `WebSocket error: Connection failed. Is the server running?`));
-          this.onLog(createLogEntry('info', `Start the server with: node src/commander/server.js`));
-          safeReject(error);
+          if (!connectionOpened) {
+            // Connection failed before opening - this is a retry-able error
+            safeReject(error);
+          } else {
+            // Error after connection was established
+            this.onLog(createLogEntry('error', `WebSocket error during session`));
+          }
         };
 
         this.ws.onclose = () => {
